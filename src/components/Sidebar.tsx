@@ -2,17 +2,11 @@ import React from "react";
 
 type Props = {
   current: string;
-  onNav: (key: "events" | "hosts" | "users") => void;
+  onNav: (key: "events" | "hosts") => void;
 };
 
 export default function Sidebar({ current, onNav }: Props) {
-  const Item = ({
-    k,
-    label,
-  }: {
-    k: "events" | "hosts" | "users";
-    label: string;
-  }) => (
+  const Item = ({ k, label }: { k: "events" | "hosts"; label: string }) => (
     <a
       href="#"
       onClick={(e) => {
@@ -45,10 +39,7 @@ export default function Sidebar({ current, onNav }: Props) {
       <nav style={{ display: "grid", gap: 8 }}>
         <Item k="events" label="행사 관리" />
         <Item k="hosts" label="주최기관" />
-        <Item k="users" label="사용자" />
       </nav>
     </aside>
   );
 }
-
-

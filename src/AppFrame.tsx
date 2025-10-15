@@ -3,21 +3,28 @@ import { PaginationField, SortDirection } from "./api/types";
 import Sidebar from "./components/Sidebar";
 import EventsPage from "./pages/EventsPage";
 import HostsPage from "./pages/HostsPage";
-import UsersPage from "./pages/UsersPage";
 
 export default function AppFrame() {
-  const [page, setPage] = useState<"events" | "hosts" | "users">("events");
+  const [page, setPage] = useState<"events" | "hosts">("events");
   const [sortField, setSortField] = useState<PaginationField>(
     PaginationField.ID
   );
   const [sortDirection, setSortDirection] = useState<SortDirection>(
     SortDirection.ASC
   );
+  const [filterApproved, setFilterApproved] = useState<boolean>(true);
+  const [includeFinished, setIncludeFinished] = useState<boolean>(true);
 
   const content = (() => {
     if (page === "hosts") return <HostsPage />;
-    if (page === "users") return <UsersPage />;
-    return <EventsPage sortField={sortField} sortDirection={sortDirection} />;
+    return (
+      <EventsPage
+        sortField={sortField}
+        sortDirection={sortDirection}
+        filterApproved={filterApproved}
+        includeFinished={includeFinished}
+      />
+    );
   })();
 
   return (
@@ -42,11 +49,7 @@ export default function AppFrame() {
             style={{ display: "flex", gap: 8, justifyContent: "space-between" }}
           >
             <div style={{ fontWeight: 700 }}>
-              {page === "events"
-                ? "행사 관리"
-                : page === "hosts"
-                ? "주최기관"
-                : "사용자"}
+              {page === "events" ? "행사 관리" : "주최기관"}
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <select
@@ -66,13 +69,21 @@ export default function AppFrame() {
               </select>
               <select
                 className="select"
-                value={sortDirection}
-                onChange={(e) =>
-                  setSortDirection(e.target.value as SortDirection)
-                }
+                value={filterApproved ? "true" : "false"}
+                onChange={(e) => setFilterApproved(e.target.value === "true")}
+                style={{ width: 120 }}
               >
-                <option value={SortDirection.ASC}>오름차순</option>
-                <option value={SortDirection.DESC}>내림차순</option>
+                <option value="true">승인만</option>
+                <option value="false">전체</option>
+              </select>
+              <select
+                className="select"
+                value={includeFinished ? "true" : "false"}
+                onChange={(e) => setIncludeFinished(e.target.value === "true")}
+                style={{ width: 140 }}
+              >
+                <option value="true">종료 포함</option>
+                <option value="false">종료 제외</option>
               </select>
               <input
                 className="input"

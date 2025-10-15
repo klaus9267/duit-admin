@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   EventResponse,
   PaginationField,
@@ -72,17 +72,35 @@ const MOCK_EVENTS: EventResponse[] = [
 type Props = {
   sortField: PaginationField;
   sortDirection: SortDirection;
+  filterApproved: boolean;
+  includeFinished: boolean;
 };
 
-export default function EventsPage({ sortField, sortDirection }: Props) {
+export default function EventsPage({
+  sortField,
+  sortDirection,
+  filterApproved,
+  includeFinished,
+}: Props) {
+  const [items, setItems] = useState<EventResponse[]>(MOCK_EVENTS);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
   const formatDate = (iso: string | null): string => {
     if (!iso) return "—";
     return iso.slice(0, 10);
   };
 
-  const items = useMemo(() => {
+  const sortedItems = useMemo(() => {
     const toTime = (v: string | null): number =>
       v ? new Date(v).getTime() : 0;
+    const now = Date.now();
+    const filtered = items.filter((ev) => {
+      if (filterApproved && !ev.isApproved) return false;
+      if (!includeFinished) {
+        const end = ev.endAt ? new Date(ev.endAt).getTime() : undefined;
+        if (end && end < now) return false;
+      }
+      return true;
+    });
     const keyOf = (ev: EventResponse): number => {
       switch (sortField) {
         case PaginationField.ID:
@@ -99,8 +117,23 @@ export default function EventsPage({ sortField, sortDirection }: Props) {
       }
     };
     const dir = sortDirection === SortDirection.DESC ? -1 : 1;
-    return [...MOCK_EVENTS].sort((a, b) => (keyOf(a) - keyOf(b)) * dir);
-  }, [sortField, sortDirection]);
+    return [...filtered].sort((a, b) => (keyOf(a) - keyOf(b)) * dir);
+  }, [items, sortField, sortDirection, filterApproved, includeFinished]);
+
+  const toggleSelect = (id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const onDeleteSelected = () => {
+    if (selected.size === 0) return;
+    setItems((prev) => prev.filter((ev) => !selected.has(ev.id)));
+    setSelected(new Set());
+  };
 
   return (
     <div
@@ -114,19 +147,27 @@ export default function EventsPage({ sortField, sortDirection }: Props) {
       <table className="grid-table">
         <thead>
           <tr>
+            <th style={{ width: 44, textAlign: "center" }}>
+              <button
+                className={selected.size > 0 ? "btn primary" : "btn"}
+                onClick={onDeleteSelected}
+                disabled={selected.size === 0}
+              >
+                삭제
+              </button>
+            </th>
             <th>ID</th>
             <th>썸네일</th>
-            <th>제목</th>
+            <th style={{ width: "40%" }}>제목</th>
             <th>주최ID</th>
             <th>유형</th>
-            <th>승인</th>
+            <th style={{ width: 60, textAlign: "center" }}>승인</th>
             <th>모집 시작</th>
             <th>모집 종료</th>
             <th>시작</th>
             <th>종료</th>
             <th>조회수</th>
             <th>링크</th>
-            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -135,8 +176,15 @@ export default function EventsPage({ sortField, sortDirection }: Props) {
               <td colSpan={13}>데이터가 없습니다</td>
             </tr>
           ) : (
-            items.map((ev) => (
+            sortedItems.map((ev) => (
               <tr key={ev.id}>
+                <td style={{ width: 44, textAlign: "center" }}>
+                  <input
+                    type="checkbox"
+                    checked={selected.has(ev.id)}
+                    onChange={() => toggleSelect(ev.id)}
+                  />
+                </td>
                 <td>{ev.id}</td>
                 <td>
                   {ev.thumbnail ? (
@@ -166,7 +214,9 @@ export default function EventsPage({ sortField, sortDirection }: Props) {
                 <td>{ev.title}</td>
                 <td>{ev.host.id}</td>
                 <td>{ev.eventType}</td>
-                <td>{ev.isApproved ? "승인됨" : "미승인"}</td>
+                <td style={{ width: 60, textAlign: "center" }}>
+                  {ev.isApproved ? "O" : "X"}
+                </td>
                 <td>{formatDate(ev.recruitmentStartAt)}</td>
                 <td>{formatDate(ev.recruitmentEndAt)}</td>
                 <td>{formatDate(ev.startAt)}</td>
@@ -176,9 +226,6 @@ export default function EventsPage({ sortField, sortDirection }: Props) {
                   <a href={ev.uri} target="_blank" rel="noreferrer">
                     열기
                   </a>
-                </td>
-                <td>
-                  <a href="#">상세보기</a>
                 </td>
               </tr>
             ))
