@@ -1,0 +1,190 @@
+import React, { useMemo } from "react";
+import {
+  EventResponse,
+  PaginationField,
+  SortDirection,
+  EventType,
+} from "../api/types";
+
+const MOCK_EVENTS: EventResponse[] = [
+  {
+    id: 1,
+    title: "행사 제목 예시",
+    startAt: "2025-05-01T00:00:00",
+    endAt: "2025-05-03T00:00:00",
+    recruitmentStartAt: "2025-04-10T00:00:00",
+    recruitmentEndAt: "2025-04-25T00:00:00",
+    uri: "#",
+    thumbnail: null,
+    isApproved: true,
+    eventType: EventType.CONFERENCE,
+    host: { id: 1, name: "가나다 대학병원", thumbnail: null },
+    viewCount: 123,
+    isBookmarked: false,
+  },
+  {
+    id: 2,
+    title: "간호 세미나 A",
+    startAt: "2025-06-25T00:00:00",
+    endAt: "2025-06-26T00:00:00",
+    recruitmentStartAt: "2025-06-12T00:00:00",
+    recruitmentEndAt: "2025-06-20T00:00:00",
+    uri: "#",
+    thumbnail: null,
+    isApproved: true,
+    eventType: EventType.SEMINAR,
+    host: { id: 2, name: "초록 병원", thumbnail: null },
+    viewCount: 87,
+    isBookmarked: false,
+  },
+  {
+    id: 3,
+    title: "워크숍 B",
+    startAt: "2025-07-10T00:00:00",
+    endAt: "2025-07-11T00:00:00",
+    recruitmentStartAt: "2025-07-01T00:00:00",
+    recruitmentEndAt: "2025-07-05T00:00:00",
+    uri: "#",
+    thumbnail: null,
+    isApproved: true,
+    eventType: EventType.WORKSHOP,
+    host: { id: 3, name: "파란 연구소", thumbnail: null },
+    viewCount: 45,
+    isBookmarked: false,
+  },
+  {
+    id: 4,
+    title: "웨비나 C",
+    startAt: "2025-08-15T00:00:00",
+    endAt: "2025-08-15T00:00:00",
+    recruitmentStartAt: "2025-08-03T00:00:00",
+    recruitmentEndAt: "2025-08-08T00:00:00",
+    uri: "#",
+    thumbnail: null,
+    isApproved: true,
+    eventType: EventType.WEBINAR,
+    host: { id: 4, name: "단국대학교 IT 대학", thumbnail: null },
+    viewCount: 210,
+    isBookmarked: false,
+  },
+];
+
+type Props = {
+  sortField: PaginationField;
+  sortDirection: SortDirection;
+};
+
+export default function EventsPage({ sortField, sortDirection }: Props) {
+  const formatDate = (iso: string | null): string => {
+    if (!iso) return "—";
+    return iso.slice(0, 10);
+  };
+
+  const items = useMemo(() => {
+    const toTime = (v: string | null): number =>
+      v ? new Date(v).getTime() : 0;
+    const keyOf = (ev: EventResponse): number => {
+      switch (sortField) {
+        case PaginationField.ID:
+          return ev.id;
+        case PaginationField.START_DATE:
+          return toTime(ev.startAt);
+        case PaginationField.RECRUITMENT_DEADLINE:
+          return toTime(ev.recruitmentEndAt);
+        case PaginationField.VIEW_COUNT:
+          return ev.viewCount;
+        case PaginationField.CREATED_AT:
+        default:
+          return ev.id;
+      }
+    };
+    const dir = sortDirection === SortDirection.DESC ? -1 : 1;
+    return [...MOCK_EVENTS].sort((a, b) => (keyOf(a) - keyOf(b)) * dir);
+  }, [sortField, sortDirection]);
+
+  return (
+    <div
+      style={{
+        background: "var(--panel)",
+        border: "1px solid var(--border)",
+        borderRadius: 10,
+        overflow: "hidden",
+      }}
+    >
+      <table className="grid-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>썸네일</th>
+            <th>제목</th>
+            <th>주최ID</th>
+            <th>유형</th>
+            <th>승인</th>
+            <th>모집 시작</th>
+            <th>모집 종료</th>
+            <th>시작</th>
+            <th>종료</th>
+            <th>조회수</th>
+            <th>링크</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.length === 0 ? (
+            <tr>
+              <td colSpan={13}>데이터가 없습니다</td>
+            </tr>
+          ) : (
+            items.map((ev) => (
+              <tr key={ev.id}>
+                <td>{ev.id}</td>
+                <td>
+                  {ev.thumbnail ? (
+                    <img
+                      src={ev.thumbnail}
+                      alt=""
+                      style={{
+                        width: 40,
+                        height: 28,
+                        objectFit: "cover",
+                        border: "1px solid #ddd",
+                        borderRadius: 4,
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 40,
+                        height: 28,
+                        background: "#eee",
+                        border: "1px solid #ddd",
+                        borderRadius: 4,
+                      }}
+                    />
+                  )}
+                </td>
+                <td>{ev.title}</td>
+                <td>{ev.host.id}</td>
+                <td>{ev.eventType}</td>
+                <td>{ev.isApproved ? "승인됨" : "미승인"}</td>
+                <td>{formatDate(ev.recruitmentStartAt)}</td>
+                <td>{formatDate(ev.recruitmentEndAt)}</td>
+                <td>{formatDate(ev.startAt)}</td>
+                <td>{formatDate(ev.endAt)}</td>
+                <td>{ev.viewCount}</td>
+                <td>
+                  <a href={ev.uri} target="_blank" rel="noreferrer">
+                    열기
+                  </a>
+                </td>
+                <td>
+                  <a href="#">상세보기</a>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
