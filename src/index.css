@@ -73,10 +73,11 @@ body {
   color: #1f2937;
   height: 44px;
   border-bottom: 1px solid #e5e9ef;
+  padding: 8px 12px;
 }
 .grid-table th,
 .grid-table td {
-  padding: 10px 12px;
+  padding: 8px 12px;
   text-align: left;
   vertical-align: middle;
   border-bottom: 1px solid var(--border);

@@ -87,41 +87,18 @@ export default function EventsPage({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const formatDate = (iso: string | null): string => {
+  const formatDateTime = (iso: string | null): string => {
     if (!iso) return "—";
-    return iso.slice(0, 10);
+    const d = new Date(iso);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `${y}-${m}-${day} ${hh}:${mm}`;
   };
 
-  const sortedItems = useMemo(() => {
-    const toTime = (v: string | null): number =>
-      v ? new Date(v).getTime() : 0;
-    const now = Date.now();
-    const filtered = items.filter((ev) => {
-      if (filterApproved && !ev.isApproved) return false;
-      if (!includeFinished) {
-        const end = ev.endAt ? new Date(ev.endAt).getTime() : undefined;
-        if (end && end < now) return false;
-      }
-      return true;
-    });
-    const keyOf = (ev: EventResponse): number => {
-      switch (sortField) {
-        case PaginationField.ID:
-          return ev.id;
-        case PaginationField.START_DATE:
-          return toTime(ev.startAt);
-        case PaginationField.RECRUITMENT_DEADLINE:
-          return toTime(ev.recruitmentEndAt);
-        case PaginationField.VIEW_COUNT:
-          return ev.viewCount;
-        case PaginationField.CREATED_AT:
-        default:
-          return ev.id;
-      }
-    };
-    const dir = sortDirection === SortDirection.DESC ? -1 : 1;
-    return [...filtered].sort((a, b) => (keyOf(a) - keyOf(b)) * dir);
-  }, [items, sortField, sortDirection, filterApproved, includeFinished]);
+  // 서버에서 받아온 데이터를 그대로 출력 (정렬/필터링 제거)
 
   useEffect(() => {
     let cancelled = false;
@@ -171,7 +148,7 @@ export default function EventsPage({
         background: "var(--panel)",
         border: "1px solid var(--border)",
         borderRadius: 10,
-        overflow: "hidden",
+        overflow: "auto",
       }}
     >
       {error ? (
@@ -189,18 +166,18 @@ export default function EventsPage({
                 삭제
               </button>
             </th>
-            <th>ID</th>
-            <th>썸네일</th>
-            <th style={{ width: "40%" }}>제목</th>
-            <th>주최ID</th>
-            <th>유형</th>
+            <th style={{ width: 28 }}>ID</th>
+            <th style={{ width: 60 }}>썸네일</th>
+            <th style={{ width: 360 }}>제목</th>
+            <th style={{ width: 36 }}>주최ID</th>
+            <th style={{ width: 120 }}>유형</th>
             <th style={{ width: 60, textAlign: "center" }}>승인</th>
-            <th>모집 시작</th>
-            <th>모집 종료</th>
-            <th>시작</th>
-            <th>종료</th>
-            <th>조회수</th>
-            <th>링크</th>
+            <th style={{ width: 140 }}>모집 시작</th>
+            <th style={{ width: 140 }}>모집 종료</th>
+            <th style={{ width: 140 }}>시작</th>
+            <th style={{ width: 140 }}>종료</th>
+            <th style={{ width: 80 }}>조회수</th>
+            <th style={{ width: 72 }}>링크</th>
           </tr>
         </thead>
         <tbody>
@@ -213,7 +190,7 @@ export default function EventsPage({
               <td colSpan={13}>데이터가 없습니다</td>
             </tr>
           ) : (
-            sortedItems.map((ev) => (
+            items.map((ev) => (
               <tr key={ev.id}>
                 <td style={{ width: 44, textAlign: "center" }}>
                   <input
@@ -248,16 +225,41 @@ export default function EventsPage({
                     />
                   )}
                 </td>
-                <td>{ev.title}</td>
+                <td>
+                  <span className="truncate" title={ev.title}>
+                    {ev.title}
+                  </span>
+                </td>
                 <td>{ev.host.id}</td>
-                <td>{ev.eventType}</td>
+                <td>
+                  {((): string => {
+                    switch (ev.eventType) {
+                      case EventType.CONFERENCE:
+                        return "컨퍼런스/학술대회";
+                      case EventType.SEMINAR:
+                        return "세미나";
+                      case EventType.WEBINAR:
+                        return "웨비나";
+                      case EventType.WORKSHOP:
+                        return "워크숍";
+                      case EventType.CONTEST:
+                        return "공모전";
+                      case EventType.CONTINUING_EDUCATION:
+                        return "보수교육";
+                      case EventType.EDUCATION:
+                        return "교육";
+                      default:
+                        return "기타";
+                    }
+                  })()}
+                </td>
                 <td style={{ width: 60, textAlign: "center" }}>
                   {ev.isApproved ? "O" : "X"}
                 </td>
-                <td>{formatDate(ev.recruitmentStartAt)}</td>
-                <td>{formatDate(ev.recruitmentEndAt)}</td>
-                <td>{formatDate(ev.startAt)}</td>
-                <td>{formatDate(ev.endAt)}</td>
+                <td>{formatDateTime(ev.recruitmentStartAt)}</td>
+                <td>{formatDateTime(ev.recruitmentEndAt)}</td>
+                <td>{formatDateTime(ev.startAt)}</td>
+                <td>{formatDateTime(ev.endAt)}</td>
                 <td>{ev.viewCount}</td>
                 <td>
                   <a href={ev.uri} target="_blank" rel="noreferrer">
