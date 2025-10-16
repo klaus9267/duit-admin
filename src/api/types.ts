@@ -11,8 +11,20 @@ export enum EventType {
   ETC = "ETC",
 }
 
+export const EVENT_TYPE_LABEL: Record<EventType, string> = {
+  [EventType.CONFERENCE]: "컨퍼런스/학술대회",
+  [EventType.SEMINAR]: "세미나",
+  [EventType.WEBINAR]: "웨비나",
+  [EventType.WORKSHOP]: "워크숍",
+  [EventType.CONTEST]: "공모전",
+  [EventType.CONTINUING_EDUCATION]: "보수교육",
+  [EventType.EDUCATION]: "교육",
+  [EventType.ETC]: "기타",
+};
+
 export enum PaginationField {
   ID = "ID",
+  NAME = "NAME",
   START_DATE = "START_DATE",
   RECRUITMENT_DEADLINE = "RECRUITMENT_DEADLINE",
   VIEW_COUNT = "VIEW_COUNT",
@@ -69,4 +81,16 @@ export interface EventListParams {
   type?: EventType[];
   hostId?: number;
   searchKeyword?: string;
+}
+
+export interface HostListResponse {
+  content: HostResponse[];
+  pageInfo: PageInfo;
+}
+
+export interface HostListParams {
+  page?: number;
+  size?: number;
+  sortDirection?: SortDirection;
+  field: PaginationField; // e.g., NAME
 }

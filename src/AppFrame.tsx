@@ -7,10 +7,10 @@ import HostsPage from "./pages/HostsPage";
 export default function AppFrame() {
   const [page, setPage] = useState<"events" | "hosts">("events");
   const [sortField, setSortField] = useState<PaginationField>(
-    PaginationField.ID
+    PaginationField.START_DATE
   );
   const [sortDirection, setSortDirection] = useState<SortDirection>(
-    SortDirection.ASC
+    SortDirection.DESC
   );
   const [filterApproved, setFilterApproved] = useState<boolean>(true);
   const [includeFinished, setIncludeFinished] = useState<boolean>(true);

@@ -51,11 +51,21 @@ body {
   background: #fff;
 }
 
+/* Text ellipsis utility */
+.truncate {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Table grid separators */
 .grid-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  table-layout: fixed;
+  min-width: 1200px;
 }
 .grid-table thead th {
   background: #f6f8fb;

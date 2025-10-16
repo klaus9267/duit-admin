@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   EventResponse,
   PaginationField,
   SortDirection,
   EventType,
 } from "../api/types";
+import { getEvents } from "../api/eventsClient";
 
 const MOCK_EVENTS: EventResponse[] = [
   {
@@ -83,6 +84,8 @@ export default function EventsPage({
   includeFinished,
 }: Props) {
   const [items, setItems] = useState<EventResponse[]>(MOCK_EVENTS);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const formatDate = (iso: string | null): string => {
     if (!iso) return "—";
@@ -120,6 +123,33 @@ export default function EventsPage({
     return [...filtered].sort((a, b) => (keyOf(a) - keyOf(b)) * dir);
   }, [items, sortField, sortDirection, filterApproved, includeFinished]);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getEvents({
+          page: 0,
+          size: 20,
+          field: sortField,
+          sortDirection,
+          isApproved: filterApproved,
+          includeFinished,
+        });
+        if (!cancelled) setItems(data.content);
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message ?? "오류가 발생했습니다");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [sortField, sortDirection, filterApproved, includeFinished]);
+
   const toggleSelect = (id: number) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -144,6 +174,9 @@ export default function EventsPage({
         overflow: "hidden",
       }}
     >
+      {error ? (
+        <div style={{ padding: 12, color: "#b91c1c" }}>오류: {error}</div>
+      ) : null}
       <table className="grid-table">
         <thead>
           <tr>
@@ -171,7 +204,11 @@ export default function EventsPage({
           </tr>
         </thead>
         <tbody>
-          {items.length === 0 ? (
+          {loading ? (
+            <tr>
+              <td colSpan={13}>로딩 중…</td>
+            </tr>
+          ) : items.length === 0 ? (
             <tr>
               <td colSpan={13}>데이터가 없습니다</td>
             </tr>
