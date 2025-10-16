@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   EventResponse,
   PaginationField,
@@ -83,10 +83,14 @@ export default function EventsPage({
   filterApproved,
   includeFinished,
 }: Props) {
-  const [items, setItems] = useState<EventResponse[]>(MOCK_EVENTS);
+  const [items, setItems] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [page, setPage] = useState<number>(0);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [totalElements, setTotalElements] = useState<number>(0);
+  const observerRef = useRef<HTMLDivElement>(null);
   const formatDateTime = (iso: string | null): string => {
     if (!iso) return "—";
     const d = new Date(iso);
@@ -98,34 +102,72 @@ export default function EventsPage({
     return `${y}-${m}-${day} ${hh}:${mm}`;
   };
 
-  // 서버에서 받아온 데이터를 그대로 출력 (정렬/필터링 제거)
+  // 무한 스크롤을 위한 데이터 로딩
+  const loadMore = async (pageNum: number, reset: boolean = false) => {
+    if (loading) return;
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await getEvents({
-          page: 0,
-          size: 20,
-          field: sortField,
-          sortDirection,
-          isApproved: filterApproved,
-          includeFinished,
-        });
-        if (!cancelled) setItems(data.content);
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message ?? "오류가 발생했습니다");
-      } finally {
-        if (!cancelled) setLoading(false);
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getEvents({
+        page: pageNum,
+        size: 20,
+        field: sortField,
+        sortDirection,
+        isApproved: filterApproved,
+        includeFinished,
+      });
+
+      if (reset) {
+        setItems(data.content);
+      } else {
+        setItems((prev) => [...prev, ...data.content]);
       }
+
+      setTotalElements(data.pageInfo.totalElements);
+      setHasMore(data.pageInfo.pageNumber < data.pageInfo.totalPages - 1);
+    } catch (e: any) {
+      setError(e?.message ?? "오류가 발생했습니다");
+    } finally {
+      setLoading(false);
     }
-    load();
-    return () => {
-      cancelled = true;
-    };
+  };
+
+  // 필터 변경 시 초기화
+  useEffect(() => {
+    setPage(0);
+    setItems([]);
+    setHasMore(true);
+    loadMore(0, true);
   }, [sortField, sortDirection, filterApproved, includeFinished]);
+
+  // 무한 스크롤 옵저버
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          const nextPage = page + 1;
+          setPage(nextPage);
+          loadMore(nextPage, false);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [
+    page,
+    hasMore,
+    loading,
+    sortField,
+    sortDirection,
+    filterApproved,
+    includeFinished,
+  ]);
 
   const toggleSelect = (id: number) => {
     setSelected((prev) => {
@@ -154,6 +196,20 @@ export default function EventsPage({
       {error ? (
         <div style={{ padding: 12, color: "#b91c1c" }}>오류: {error}</div>
       ) : null}
+
+      {/* 전체 개수 표시 */}
+      <div
+        style={{
+          padding: "8px 12px",
+          background: "#f8f9fa",
+          borderBottom: "1px solid var(--border)",
+          fontSize: "14px",
+          color: "#666",
+        }}
+      >
+        총 {totalElements}개 행사
+      </div>
+
       <table className="grid-table">
         <thead>
           <tr>
@@ -181,11 +237,7 @@ export default function EventsPage({
           </tr>
         </thead>
         <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan={13}>로딩 중…</td>
-            </tr>
-          ) : items.length === 0 ? (
+          {items.length === 0 && !loading ? (
             <tr>
               <td colSpan={13}>데이터가 없습니다</td>
             </tr>
@@ -271,6 +323,18 @@ export default function EventsPage({
           )}
         </tbody>
       </table>
+
+      {/* 무한 스크롤 트리거 */}
+      <div ref={observerRef} style={{ height: "20px", margin: "10px 0" }}>
+        {loading && (
+          <div style={{ textAlign: "center", padding: "10px" }}>로딩 중...</div>
+        )}
+        {!hasMore && items.length > 0 && (
+          <div style={{ textAlign: "center", padding: "10px", color: "#666" }}>
+            모든 데이터를 불러왔습니다
+          </div>
+        )}
+      </div>
     </div>
   );
 }
