@@ -3,6 +3,8 @@ import { PaginationField, SortDirection } from "./api/types";
 import Sidebar from "./components/Sidebar";
 import EventsPage from "./pages/EventsPage";
 import HostsPage from "./pages/HostsPage";
+import CreateEventModal from "./components/CreateEventModal";
+import { createEvent } from "./api/eventsClient";
 
 export default function AppFrame() {
   const [page, setPage] = useState<"events" | "hosts">("events");
@@ -14,6 +16,7 @@ export default function AppFrame() {
   );
   const [filterApproved, setFilterApproved] = useState<boolean>(true);
   const [includeFinished, setIncludeFinished] = useState<boolean>(true);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
 
   const content = (() => {
     if (page === "hosts") return <HostsPage />;
@@ -90,7 +93,12 @@ export default function AppFrame() {
                 placeholder="검색"
                 style={{ width: 280 }}
               />
-              <button className="btn primary">추가</button>
+              <button
+                className="btn primary"
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                추가
+              </button>
             </div>
           </div>
         </header>
@@ -105,6 +113,23 @@ export default function AppFrame() {
           {content}
         </div>
       </section>
+
+      {/* 행사 생성 모달 */}
+      <CreateEventModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={async (formData) => {
+          try {
+            await createEvent(formData);
+            alert("행사가 성공적으로 생성되었습니다!");
+            setIsCreateModalOpen(false);
+            // 페이지 새로고침 또는 데이터 다시 로드
+            window.location.reload();
+          } catch (error: any) {
+            alert(`행사 생성 실패: ${error.message}`);
+          }
+        }}
+      />
     </div>
   );
 }

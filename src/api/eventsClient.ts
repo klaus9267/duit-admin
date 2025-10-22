@@ -42,3 +42,25 @@ export async function getEvents(
   }
   return (await res.json()) as EventListResponse;
 }
+
+export async function createEvent(
+  formData: FormData,
+  token?: string
+): Promise<{ id: number; message: string }> {
+  const url = `${API_BASE}/api/v1/events/admin`;
+  const res = await fetch(url, {
+    method: "POST",
+    body: formData,
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to create event: ${res.status} ${text}`);
+  }
+
+  return (await res.json()) as { id: number; message: string };
+}
