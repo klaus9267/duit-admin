@@ -5,7 +5,7 @@ import {
   SortDirection,
   EventType,
 } from "../api/types";
-import { getEvents } from "../api/eventsClient";
+import { getEvents, deleteEvent } from "../api/eventsClient";
 
 const MOCK_EVENTS: EventResponse[] = [
   {
@@ -178,10 +178,29 @@ export default function EventsPage({
     });
   };
 
-  const onDeleteSelected = () => {
+  const onDeleteSelected = async () => {
     if (selected.size === 0) return;
-    setItems((prev) => prev.filter((ev) => !selected.has(ev.id)));
-    setSelected(new Set());
+
+    if (!confirm(`선택된 ${selected.size}개의 행사를 삭제하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      // 선택된 각 행사를 서버에서 삭제
+      const deletePromises = Array.from(selected).map((eventId) =>
+        deleteEvent(eventId)
+      );
+
+      await Promise.all(deletePromises);
+
+      // 성공 시 로컬 상태에서도 제거
+      setItems((prev) => prev.filter((ev) => !selected.has(ev.id)));
+      setSelected(new Set());
+
+      alert("선택된 행사가 성공적으로 삭제되었습니다.");
+    } catch (error: any) {
+      alert(`삭제 실패: ${error.message}`);
+    }
   };
 
   return (

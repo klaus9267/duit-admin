@@ -73,3 +73,26 @@ export async function createEvent(
 
   return (await res.json()) as { id: number; message: string };
 }
+
+export async function deleteEvent(
+  eventId: number,
+  token?: string
+): Promise<void> {
+  const url = `${API_BASE}/api/v1/events/${eventId}`;
+
+  // 토큰이 없으면 localStorage에서 가져오기
+  const authToken = token || localStorage.getItem("admin_token");
+
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to delete event: ${res.status} ${text}`);
+  }
+}
