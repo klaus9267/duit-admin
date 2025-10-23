@@ -10,9 +10,9 @@ interface Props {
 interface FormData {
   title: string;
   startAt: string;
-  endAt: string;
-  recruitmentStartAt: string;
-  recruitmentEndAt: string;
+  endAt: string | null; // null 허용
+  recruitmentStartAt: string | null; // null 허용
+  recruitmentEndAt: string | null; // null 허용
   uri: string;
   eventType: EventType;
   hostName: string;
@@ -35,9 +35,9 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
   const [formData, setFormData] = useState<FormData>({
     title: "",
     startAt: "",
-    endAt: "",
-    recruitmentStartAt: "",
-    recruitmentEndAt: "",
+    endAt: null, // null로 초기화
+    recruitmentStartAt: null, // null로 초기화
+    recruitmentEndAt: null, // null로 초기화
     uri: "",
     eventType: EventType.CONFERENCE,
     hostName: "",
@@ -110,7 +110,17 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
   };
 
   const handleInputChange = (field: keyof FormData, value: string | File) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    let processedValue: string | File | null = value;
+    // 날짜/시간 필드가 비어있으면 null로 처리
+    if (
+      typeof value === "string" &&
+      (field === "endAt" ||
+        field === "recruitmentStartAt" ||
+        field === "recruitmentEndAt")
+    ) {
+      processedValue = value === "" ? null : value;
+    }
+    setFormData((prev) => ({ ...prev, [field]: processedValue }));
     // 해당 필드의 에러 제거
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -251,11 +261,11 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
                     fontSize: "14px",
                   }}
                 >
-                  행사 종료일 *
+                  행사 종료일
                 </label>
                 <input
                   type="datetime-local"
-                  value={formData.endAt}
+                  value={formData.endAt || ""} // null일 경우 빈 문자열
                   onChange={(e) => handleInputChange("endAt", e.target.value)}
                   className="input"
                   style={{
@@ -263,7 +273,7 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
                     minWidth: "200px",
                     boxSizing: "border-box",
                   }}
-                  required
+                  // required 속성 제거
                 />
                 {errors.endAt && (
                   <div
@@ -300,7 +310,7 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
                 </label>
                 <input
                   type="datetime-local"
-                  value={formData.recruitmentStartAt}
+                  value={formData.recruitmentStartAt || ""} // null일 경우 빈 문자열
                   onChange={(e) =>
                     handleInputChange("recruitmentStartAt", e.target.value)
                   }
@@ -325,7 +335,7 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
                 </label>
                 <input
                   type="datetime-local"
-                  value={formData.recruitmentEndAt}
+                  value={formData.recruitmentEndAt || ""} // null일 경우 빈 문자열
                   onChange={(e) =>
                     handleInputChange("recruitmentEndAt", e.target.value)
                   }

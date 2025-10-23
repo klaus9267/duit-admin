@@ -70,7 +70,7 @@ export default function HostsPage() {
         background: "var(--panel)",
         border: "1px solid var(--border)",
         borderRadius: 10,
-        overflow: "hidden",
+        overflow: "auto",
       }}
     >
       {error ? (
@@ -93,10 +93,10 @@ export default function HostsPage() {
       <table className="grid-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>기관명</th>
-            <th>썸네일</th>
-            <th></th>
+            <th style={{ width: 60 }}>ID</th>
+            <th style={{ width: 60 }}>썸네일</th>
+            <th style={{ width: 400 }}>기관명</th>
+            <th style={{ width: 80 }}></th>
           </tr>
         </thead>
         <tbody>
@@ -108,17 +108,27 @@ export default function HostsPage() {
             items.map((h) => (
               <tr key={h.id}>
                 <td>{h.id}</td>
-                <td>{h.name}</td>
                 <td>
                   {h.thumbnail ? (
                     <img
                       src={h.thumbnail}
                       alt=""
-                      style={{ width: 40, height: 28, objectFit: "cover" }}
+                      style={{
+                        width: 40,
+                        height: 28,
+                        objectFit: "cover",
+                        border: "1px solid #ddd",
+                        borderRadius: 4,
+                      }}
                     />
                   ) : (
                     "—"
                   )}
+                </td>
+                <td>
+                  <span className="truncate" title={h.name}>
+                    {h.name}
+                  </span>
                 </td>
                 <td>
                   <a href="#">편집</a>
