@@ -1,12 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PaginationField, SortDirection } from "./api/types";
 import Sidebar from "./components/Sidebar";
 import EventsPage from "./pages/EventsPage";
 import HostsPage from "./pages/HostsPage";
 import CreateEventModal from "./components/CreateEventModal";
+import LoginPage from "./components/LoginPage";
 import { createEvent } from "./api/eventsClient";
+import {
+  login,
+  logout,
+  getStoredToken,
+  setStoredToken,
+} from "./api/authClient";
 
 export default function AppFrame() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [page, setPage] = useState<"events" | "hosts">("events");
   const [sortField, setSortField] = useState<PaginationField>(
     PaginationField.START_DATE
@@ -17,6 +26,73 @@ export default function AppFrame() {
   const [filterApproved, setFilterApproved] = useState<boolean>(true);
   const [includeFinished, setIncludeFinished] = useState<boolean>(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+
+  // 로그인 상태 확인
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = getStoredToken();
+      setIsAuthenticated(!!token);
+      setIsLoading(false);
+    };
+
+    checkAuth();
+  }, []);
+
+  // 로그인 처리
+  const handleLogin = async (username: string, password: string) => {
+    try {
+      const response = await login({
+        adminId: username,
+        password: password,
+      });
+
+      setStoredToken(response.accessToken);
+      setIsAuthenticated(true);
+    } catch (error: any) {
+      throw new Error(error.message || "로그인에 실패했습니다.");
+    }
+  };
+
+  // 로그아웃 처리
+  const handleLogout = async () => {
+    await logout();
+    setIsAuthenticated(false);
+  };
+
+  // 로딩 중이면 로딩 화면 표시
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "var(--bg)",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              border: "4px solid #f3f3f3",
+              borderTop: "4px solid var(--primary)",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+              margin: "0 auto 16px",
+            }}
+          />
+          <div style={{ color: "#666", fontSize: "14px" }}>로딩 중...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // 로그인하지 않은 경우 로그인 페이지 표시
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
 
   const content = (() => {
     if (page === "hosts") return <HostsPage />;
@@ -98,6 +174,17 @@ export default function AppFrame() {
                 onClick={() => setIsCreateModalOpen(true)}
               >
                 추가
+              </button>
+              <button
+                className="btn"
+                onClick={handleLogout}
+                style={{
+                  background: "#dc2626",
+                  borderColor: "#dc2626",
+                  color: "white",
+                }}
+              >
+                로그아웃
               </button>
             </div>
           </div>

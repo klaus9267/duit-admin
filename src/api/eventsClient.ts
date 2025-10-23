@@ -1,6 +1,7 @@
 import { EventListParams, EventListResponse } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+export const API_BASE =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 function toQuery(params: EventListParams): string {
   const search = new URLSearchParams();
@@ -29,10 +30,14 @@ export async function getEvents(
 ): Promise<EventListResponse> {
   const query = toQuery(params);
   const url = `${API_BASE}/api/v1/events${query}`;
+
+  // 토큰이 없으면 localStorage에서 가져오기
+  const authToken = token || localStorage.getItem("admin_token");
+
   const res = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
     },
     credentials: "include",
   });
@@ -48,11 +53,15 @@ export async function createEvent(
   token?: string
 ): Promise<{ id: number; message: string }> {
   const url = `${API_BASE}/api/v1/events/admin`;
+
+  // 토큰이 없으면 localStorage에서 가져오기
+  const authToken = token || localStorage.getItem("admin_token");
+
   const res = await fetch(url, {
     method: "POST",
     body: formData,
     headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
     },
     credentials: "include",
   });

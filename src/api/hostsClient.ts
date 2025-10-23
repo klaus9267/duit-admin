@@ -1,6 +1,5 @@
 import { HostListParams, HostListResponse } from "./types";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+import { API_BASE } from "./eventsClient";
 
 function toQuery(params: HostListParams): string {
   const s = new URLSearchParams();
@@ -13,11 +12,19 @@ function toQuery(params: HostListParams): string {
 }
 
 export async function getHosts(
-  params: HostListParams
+  params: HostListParams,
+  token?: string
 ): Promise<HostListResponse> {
   const url = `${API_BASE}/api/v1/hosts${toQuery(params)}`;
+
+  // 토큰이 없으면 localStorage에서 가져오기
+  const authToken = token || localStorage.getItem("admin_token");
+
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    },
     credentials: "include",
   });
   if (!res.ok) {
