@@ -18,7 +18,7 @@ export default function AppFrame() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [page, setPage] = useState<"events" | "hosts">("events");
   const [sortField, setSortField] = useState<PaginationField>(
-    PaginationField.START_DATE
+    PaginationField.ID
   );
   const [sortDirection, setSortDirection] = useState<SortDirection>(
     SortDirection.DESC
@@ -213,9 +213,9 @@ export default function AppFrame() {
       <CreateEventModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={async (formData) => {
+        onSubmit={async (eventFormData) => {
           try {
-            await createEvent(formData);
+            await createEvent(eventFormData);
             alert("행사가 성공적으로 생성되었습니다!");
             setIsCreateModalOpen(false);
             // 페이지 새로고침 또는 데이터 다시 로드

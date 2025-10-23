@@ -7,7 +7,7 @@ interface Props {
   onSubmit: (data: FormData) => void;
 }
 
-interface FormData {
+interface EventFormData {
   title: string;
   startAt: string;
   endAt: string | null; // null 허용
@@ -32,7 +32,7 @@ const EVENT_TYPE_OPTIONS = [
 ];
 
 export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<EventFormData>({
     title: "",
     startAt: "",
     endAt: null, // null로 초기화
@@ -109,7 +109,10 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
     onSubmit(submitData);
   };
 
-  const handleInputChange = (field: keyof FormData, value: string | File) => {
+  const handleInputChange = (
+    field: keyof EventFormData,
+    value: string | File
+  ) => {
     let processedValue: string | File | null = value;
     // 날짜/시간 필드가 비어있으면 null로 처리
     if (
