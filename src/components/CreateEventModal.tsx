@@ -84,7 +84,35 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
       return;
     }
 
+    // 파일 크기 및 타입 검증
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
+
+    if (formData.eventThumbnail && formData.eventThumbnail.size > 0) {
+      if (formData.eventThumbnail.size > MAX_FILE_SIZE) {
+        alert("행사 썸네일 파일 크기는 5MB를 초과할 수 없습니다.");
+        return;
+      }
+      if (!ALLOWED_TYPES.includes(formData.eventThumbnail.type)) {
+        alert("행사 썸네일은 JPG, PNG, GIF 파일만 업로드 가능합니다.");
+        return;
+      }
+    }
+
+    if (formData.hostThumbnail && formData.hostThumbnail.size > 0) {
+      if (formData.hostThumbnail.size > MAX_FILE_SIZE) {
+        alert("주최기관 로고 파일 크기는 5MB를 초과할 수 없습니다.");
+        return;
+      }
+      if (!ALLOWED_TYPES.includes(formData.hostThumbnail.type)) {
+        alert("주최기관 로고는 JPG, PNG, GIF 파일만 업로드 가능합니다.");
+        return;
+      }
+    }
+
     const submitData = new FormData();
+
+    // JSON 데이터를 "data" 키로 추가 (백엔드 @RequestPart("data")와 매칭)
     submitData.append(
       "data",
       JSON.stringify({
@@ -99,10 +127,11 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
       })
     );
 
-    if (formData.eventThumbnail) {
+    // 파일이 실제로 선택되었을 때만 추가 (백엔드 @RequestPart와 매칭)
+    if (formData.eventThumbnail && formData.eventThumbnail.size > 0) {
       submitData.append("eventThumbnail", formData.eventThumbnail);
     }
-    if (formData.hostThumbnail) {
+    if (formData.hostThumbnail && formData.hostThumbnail.size > 0) {
       submitData.append("hostThumbnail", formData.hostThumbnail);
     }
 

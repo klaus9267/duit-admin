@@ -250,12 +250,23 @@ export default function AppFrame() {
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={async (eventFormData) => {
           try {
-            await createEvent(eventFormData);
+            console.log("=== 행사 생성 시작 ===");
+            console.log("FormData 전송 시작...");
+
+            const result = await createEvent(eventFormData);
+            console.log("행사 생성 성공:", result);
+
             alert("행사가 성공적으로 생성되었습니다!");
             setIsCreateModalOpen(false);
             // 페이지 새로고침 또는 데이터 다시 로드
             window.location.reload();
           } catch (error: any) {
+            console.error("=== 행사 생성 실패 ===");
+            console.error("Error type:", error.constructor.name);
+            console.error("Error message:", error.message);
+            console.error("Error stack:", error.stack);
+            console.error("========================");
+
             alert(`행사 생성 실패: ${error.message}`);
           }
         }}
