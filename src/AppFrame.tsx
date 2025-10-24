@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { PaginationField, SortDirection } from "./api/types";
-import Sidebar from "./components/Sidebar";
 import EventsPage from "./pages/EventsPage";
 import HostsPage from "./pages/HostsPage";
 import CreateEventModal from "./components/CreateEventModal";
@@ -107,8 +106,7 @@ export default function AppFrame() {
   })();
 
   return (
-    <div style={{ display: "flex", height: "100%" }}>
-      <Sidebar current={page} onNav={setPage} />
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <section
         style={{
           flex: 1,
@@ -125,10 +123,47 @@ export default function AppFrame() {
           }}
         >
           <div
-            style={{ display: "flex", gap: 8, justifyContent: "space-between" }}
+            style={{
+              display: "flex",
+              gap: 8,
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
           >
-            <div style={{ fontWeight: 700 }}>
-              {page === "events" ? "행사 관리" : "주최기관"}
+            <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+              <div style={{ fontWeight: 700, fontSize: "18px" }}>
+                Du it! Admin
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => setPage("events")}
+                  style={{
+                    padding: "8px 16px",
+                    border: "1px solid var(--border)",
+                    borderRadius: "6px",
+                    background: page === "events" ? "var(--primary)" : "white",
+                    color: page === "events" ? "white" : "var(--text)",
+                    cursor: "pointer",
+                    fontWeight: "500",
+                  }}
+                >
+                  행사 관리
+                </button>
+                <button
+                  onClick={() => setPage("hosts")}
+                  style={{
+                    padding: "8px 16px",
+                    border: "1px solid var(--border)",
+                    borderRadius: "6px",
+                    background: page === "hosts" ? "var(--primary)" : "white",
+                    color: page === "hosts" ? "white" : "var(--text)",
+                    cursor: "pointer",
+                    fontWeight: "500",
+                  }}
+                >
+                  주최기관
+                </button>
+              </div>
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {page === "events" && (
