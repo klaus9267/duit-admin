@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { PaginationField, SortDirection } from "./api/types";
+import { PaginationField, SortDirection, EventResponse } from "./api/types";
 import EventsPage from "./pages/EventsPage";
 import HostsPage from "./pages/HostsPage";
 import CreateEventModal from "./components/CreateEventModal";
+import UpdateEventModal from "./components/UpdateEventModal";
 import LoginPage from "./components/LoginPage";
-import { createEvent } from "./api/eventsClient";
+import { createEvent, updateEvent } from "./api/eventsClient";
 import {
   login,
   logout,
@@ -26,6 +27,10 @@ export default function AppFrame() {
   const [filterApproved, setFilterApproved] = useState<boolean>(true);
   const [includeFinished, setIncludeFinished] = useState<boolean>(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
+  const [selectedEvent, setSelectedEvent] = useState<EventResponse | null>(
+    null
+  );
 
   // 로그인 상태 확인 및 토큰 검증
   useEffect(() => {
@@ -86,6 +91,12 @@ export default function AppFrame() {
     }
   };
 
+  // 행사 수정 핸들러
+  const handleEditEvent = (event: EventResponse) => {
+    setSelectedEvent(event);
+    setIsUpdateModalOpen(true);
+  };
+
   // 로그아웃 처리
   const handleLogout = async () => {
     await logout();
@@ -135,6 +146,7 @@ export default function AppFrame() {
         sortDirection={sortDirection}
         filterApproved={filterApproved}
         includeFinished={includeFinished}
+        onEditEvent={handleEditEvent}
       />
     );
   })();
@@ -304,6 +316,39 @@ export default function AppFrame() {
             alert(`행사 생성 실패: ${error.message}`);
           }
         }}
+      />
+
+      {/* 행사 수정 모달 */}
+      <UpdateEventModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => {
+          setIsUpdateModalOpen(false);
+          setSelectedEvent(null);
+        }}
+        onSubmit={async (eventId, formData) => {
+          try {
+            console.log("=== 행사 수정 시작 ===");
+            console.log("FormData 전송 시작...");
+
+            const result = await updateEvent(eventId, formData);
+            console.log("행사 수정 성공:", result);
+
+            alert("행사가 성공적으로 수정되었습니다!");
+            setIsUpdateModalOpen(false);
+            setSelectedEvent(null);
+            // 페이지 새로고침 또는 데이터 다시 로드
+            window.location.reload();
+          } catch (error: any) {
+            console.error("=== 행사 수정 실패 ===");
+            console.error("Error type:", error.constructor.name);
+            console.error("Error message:", error.message);
+            console.error("Error stack:", error.stack);
+            console.error("========================");
+
+            alert(`행사 수정 실패: ${error.message}`);
+          }
+        }}
+        eventData={selectedEvent}
       />
     </div>
   );

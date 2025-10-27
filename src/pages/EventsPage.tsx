@@ -97,6 +97,7 @@ type Props = {
   sortDirection: SortDirection;
   filterApproved: boolean;
   includeFinished: boolean;
+  onEditEvent?: (event: EventResponse) => void;
 };
 
 export default function EventsPage({
@@ -104,6 +105,7 @@ export default function EventsPage({
   sortDirection,
   filterApproved,
   includeFinished,
+  onEditEvent,
 }: Props) {
   const [items, setItems] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -275,6 +277,7 @@ export default function EventsPage({
             <th style={{ width: 140 }}>종료</th>
             <th style={{ width: 80 }}>조회수</th>
             <th style={{ width: 72 }}>링크</th>
+            <th style={{ width: 60, textAlign: "center" }}>수정</th>
           </tr>
         </thead>
         <tbody>
@@ -396,6 +399,22 @@ export default function EventsPage({
                   <a href={ev.uri} target="_blank" rel="noreferrer">
                     열기
                   </a>
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  <button
+                    onClick={() => onEditEvent?.(ev)}
+                    style={{
+                      padding: "4px 8px",
+                      border: "1px solid var(--primary)",
+                      borderRadius: 4,
+                      background: "white",
+                      color: "var(--primary)",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                    }}
+                  >
+                    수정
+                  </button>
                 </td>
               </tr>
             ))

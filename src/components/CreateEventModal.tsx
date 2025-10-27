@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { EventType } from "../api/types";
+import React, { useState, useEffect } from "react";
+import { EventType, HostResponse } from "../api/types";
+import { getAllHosts } from "../api/hostsClient";
 
 interface Props {
   isOpen: boolean;
@@ -15,7 +16,9 @@ interface EventFormData {
   recruitmentEndAt: string | null; // null 허용
   uri: string;
   eventType: EventType;
-  hostName: string;
+  hostMode: "select" | "create"; // 주최기관 선택 방식
+  hostId: number; // 기존 주최기관 선택 시
+  hostName: string; // 새 주최기관 생성 시
   eventThumbnail?: File;
   hostThumbnail?: File;
 }
@@ -40,10 +43,34 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
     recruitmentEndAt: null, // null로 초기화
     uri: "",
     eventType: EventType.CONFERENCE,
+    hostMode: "select",
+    hostId: 0,
     hostName: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hosts, setHosts] = useState<HostResponse[]>([]);
+  const [loadingHosts, setLoadingHosts] = useState<boolean>(false);
+
+  // 주최기관 목록 로드
+  useEffect(() => {
+    const loadHosts = async () => {
+      if (!isOpen) return;
+
+      setLoadingHosts(true);
+      try {
+        const hostList = await getAllHosts();
+        setHosts(hostList);
+      } catch (error) {
+        console.error("주최기관 목록 로드 실패:", error);
+        alert("주최기관 목록을 불러오는데 실패했습니다.");
+      } finally {
+        setLoadingHosts(false);
+      }
+    };
+
+    loadHosts();
+  }, [isOpen]);
 
   const validateDates = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -123,7 +150,9 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
         recruitmentEndAt: formData.recruitmentEndAt,
         uri: formData.uri,
         eventType: formData.eventType,
-        hostName: formData.hostName,
+        ...(formData.hostMode === "select"
+          ? { hostId: formData.hostId }
+          : { hostName: formData.hostName }),
       })
     );
 
@@ -131,7 +160,12 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
     if (formData.eventThumbnail && formData.eventThumbnail.size > 0) {
       submitData.append("eventThumbnail", formData.eventThumbnail);
     }
-    if (formData.hostThumbnail && formData.hostThumbnail.size > 0) {
+    // 새 주최기관 생성 시에만 주최기관 로고 업로드 가능
+    if (
+      formData.hostMode === "create" &&
+      formData.hostThumbnail &&
+      formData.hostThumbnail.size > 0
+    ) {
       submitData.append("hostThumbnail", formData.hostThumbnail);
     }
 
@@ -450,8 +484,8 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
               </select>
             </div>
 
-            {/* 주최기관명 */}
-            <div>
+            {/* 주최기관 선택 방식 */}
+            <div style={{ gridColumn: "1 / -1" }}>
               <label
                 style={{
                   display: "block",
@@ -460,19 +494,84 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
                   fontSize: "14px",
                 }}
               >
-                주최기관명 *
+                주최기관 *
               </label>
-              <input
-                type="text"
-                value={formData.hostName}
-                onChange={(e) => handleInputChange("hostName", e.target.value)}
-                className="input"
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                }}
-                required
-              />
+              <div
+                style={{ display: "flex", gap: "12px", marginBottom: "12px" }}
+              >
+                <label
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  <input
+                    type="radio"
+                    name="hostMode"
+                    value="select"
+                    checked={formData.hostMode === "select"}
+                    onChange={(e) =>
+                      handleInputChange("hostMode", e.target.value)
+                    }
+                  />
+                  기존 주최기관 선택
+                </label>
+                <label
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  <input
+                    type="radio"
+                    name="hostMode"
+                    value="create"
+                    checked={formData.hostMode === "create"}
+                    onChange={(e) =>
+                      handleInputChange("hostMode", e.target.value)
+                    }
+                  />
+                  새 주최기관 생성
+                </label>
+              </div>
+
+              {/* 기존 주최기관 선택 */}
+              {formData.hostMode === "select" && (
+                <select
+                  value={formData.hostId}
+                  onChange={(e) =>
+                    handleInputChange("hostId", Number(e.target.value))
+                  }
+                  className="select"
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
+                  required
+                  disabled={loadingHosts}
+                >
+                  <option value={0}>
+                    {loadingHosts ? "로딩 중..." : "주최기관을 선택하세요"}
+                  </option>
+                  {hosts.map((host) => (
+                    <option key={host.id} value={host.id}>
+                      {host.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {/* 새 주최기관 생성 */}
+              {formData.hostMode === "create" && (
+                <input
+                  type="text"
+                  value={formData.hostName}
+                  onChange={(e) =>
+                    handleInputChange("hostName", e.target.value)
+                  }
+                  placeholder="새 주최기관명을 입력하세요"
+                  className="input"
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
+                  required
+                />
+              )}
             </div>
 
             {/* 파일 업로드 */}
@@ -511,34 +610,37 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
                   }}
                 />
               </div>
-              <div style={{ minWidth: "0" }}>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "6px",
-                    fontWeight: "500",
-                    fontSize: "14px",
-                  }}
-                >
-                  주최기관 로고
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    handleInputChange(
-                      "hostThumbnail",
-                      e.target.files?.[0] || new File([], "")
-                    )
-                  }
-                  className="input"
-                  style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    lineHeight: "34px",
-                  }}
-                />
-              </div>
+              {/* 새 주최기관 생성 시에만 주최기관 로고 업로드 표시 */}
+              {formData.hostMode === "create" && (
+                <div style={{ minWidth: "0" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "6px",
+                      fontWeight: "500",
+                      fontSize: "14px",
+                    }}
+                  >
+                    주최기관 로고
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      handleInputChange(
+                        "hostThumbnail",
+                        e.target.files?.[0] || new File([], "")
+                      )
+                    }
+                    className="input"
+                    style={{
+                      width: "100%",
+                      boxSizing: "border-box",
+                      lineHeight: "34px",
+                    }}
+                  />
+                </div>
+              )}
             </div>
           </div>
 

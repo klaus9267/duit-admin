@@ -50,3 +50,31 @@ export async function getHosts(
   }
   return (await res.json()) as HostListResponse;
 }
+
+// 모든 주최기관 목록 조회 (페이지네이션 없이)
+export async function getAllHosts(token?: string): Promise<HostResponse[]> {
+  const url = `${API_BASE}/api/v1/hosts?size=1000`; // 큰 사이즈로 모든 데이터 가져오기
+
+  // 토큰 체크 및 리다이렉트
+  const authToken = token || checkAuthAndRedirect();
+
+  const res = await fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    },
+    credentials: "include",
+  });
+  if (!res.ok) {
+    if (res.status === 401) {
+      // 인증 실패 시 로그인 페이지로 리다이렉트
+      localStorage.removeItem("admin_token");
+      window.location.href = "/";
+      throw new Error("인증이 만료되었습니다. 다시 로그인해주세요.");
+    }
+    const text = await res.text();
+    throw new Error(`Failed to fetch all hosts: ${res.status} ${text}`);
+  }
+  const response = (await res.json()) as HostListResponse;
+  return response.content;
+}
