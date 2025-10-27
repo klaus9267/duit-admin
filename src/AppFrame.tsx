@@ -10,6 +10,7 @@ import {
   logout,
   getStoredToken,
   setStoredToken,
+  validateToken,
 } from "./api/authClient";
 
 export default function AppFrame() {
@@ -26,16 +27,49 @@ export default function AppFrame() {
   const [includeFinished, setIncludeFinished] = useState<boolean>(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
 
-  // 로그인 상태 확인
+  // 로그인 상태 확인 및 토큰 검증
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const token = getStoredToken();
-      setIsAuthenticated(!!token);
-      setIsLoading(false);
+      if (!token) {
+        setIsAuthenticated(false);
+        setIsLoading(false);
+        return;
+      }
+
+      // 토큰이 있으면 서버에서 유효성 검증
+      try {
+        const isValid = await validateToken();
+        setIsAuthenticated(isValid);
+      } catch (error) {
+        console.error("토큰 검증 중 오류:", error);
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     checkAuth();
   }, []);
+
+  // 페이지 이동 시 토큰 검증
+  const handlePageChange = async (newPage: "events" | "hosts") => {
+    if (isAuthenticated) {
+      // 인증된 상태에서 페이지 이동 시 토큰 재검증
+      try {
+        const isValid = await validateToken();
+        if (!isValid) {
+          setIsAuthenticated(false);
+          return;
+        }
+      } catch (error) {
+        console.error("페이지 이동 시 토큰 검증 실패:", error);
+        setIsAuthenticated(false);
+        return;
+      }
+    }
+    setPage(newPage);
+  };
 
   // 로그인 처리
   const handleLogin = async (username: string, password: string) => {
@@ -136,7 +170,7 @@ export default function AppFrame() {
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
-                  onClick={() => setPage("events")}
+                  onClick={() => handlePageChange("events")}
                   style={{
                     padding: "8px 16px",
                     border: "1px solid var(--border)",
@@ -150,7 +184,7 @@ export default function AppFrame() {
                   행사 관리
                 </button>
                 <button
-                  onClick={() => setPage("hosts")}
+                  onClick={() => handlePageChange("hosts")}
                   style={{
                     padding: "8px 16px",
                     border: "1px solid var(--border)",

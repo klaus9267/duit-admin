@@ -1,6 +1,17 @@
 import { HostListParams, HostListResponse } from "./types";
 import { API_BASE } from "./eventsClient";
 
+// 토큰이 없으면 로그인 페이지로 리다이렉트하는 함수
+function checkAuthAndRedirect() {
+  const token = localStorage.getItem("admin_token");
+  if (!token) {
+    // 토큰이 없으면 로그인 페이지로 리다이렉트
+    window.location.href = "/";
+    throw new Error("인증이 필요합니다. 로그인 페이지로 이동합니다.");
+  }
+  return token;
+}
+
 function toQuery(params: HostListParams): string {
   const s = new URLSearchParams();
   if (params.page !== undefined) s.set("page", String(params.page));
@@ -17,8 +28,8 @@ export async function getHosts(
 ): Promise<HostListResponse> {
   const url = `${API_BASE}/api/v1/hosts${toQuery(params)}`;
 
-  // 토큰이 없으면 localStorage에서 가져오기
-  const authToken = token || localStorage.getItem("admin_token");
+  // 토큰 체크 및 리다이렉트
+  const authToken = token || checkAuthAndRedirect();
 
   const res = await fetch(url, {
     headers: {
@@ -28,6 +39,12 @@ export async function getHosts(
     credentials: "include",
   });
   if (!res.ok) {
+    if (res.status === 401) {
+      // 인증 실패 시 로그인 페이지로 리다이렉트
+      localStorage.removeItem("admin_token");
+      window.location.href = "/";
+      throw new Error("인증이 만료되었습니다. 다시 로그인해주세요.");
+    }
     const text = await res.text();
     throw new Error(`Failed to fetch hosts: ${res.status} ${text}`);
   }

@@ -7,6 +7,28 @@ import {
 } from "../api/types";
 import { getEvents, deleteEvent } from "../api/eventsClient";
 
+// 이미지 URL을 절대 경로로 변환하는 함수
+function getImageUrl(thumbnail: string | null): string | null {
+  if (!thumbnail) return null;
+
+  // 이미 절대 URL인 경우 그대로 반환
+  if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
+    return thumbnail;
+  }
+
+  // 상대 경로인 경우 API_BASE와 결합
+  const API_BASE =
+    import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.DEV ? "" : "https://klaus9267.duckdns.org");
+
+  // 상대 경로가 /로 시작하지 않으면 / 추가
+  const normalizedPath = thumbnail.startsWith("/")
+    ? thumbnail
+    : `/${thumbnail}`;
+
+  return `${API_BASE}${normalizedPath}`;
+}
+
 const MOCK_EVENTS: EventResponse[] = [
   {
     id: 1,
@@ -274,7 +296,7 @@ export default function EventsPage({
                 <td>
                   {ev.thumbnail ? (
                     <img
-                      src={ev.thumbnail}
+                      src={getImageUrl(ev.thumbnail) || ev.thumbnail}
                       alt=""
                       style={{
                         width: 40,
@@ -282,6 +304,44 @@ export default function EventsPage({
                         objectFit: "cover",
                         border: "1px solid #ddd",
                         borderRadius: 4,
+                      }}
+                      onError={(e) => {
+                        console.error("이미지 로딩 실패:", ev.thumbnail);
+                        console.error("이미지 URL:", ev.thumbnail);
+                        console.error("현재 도메인:", window.location.origin);
+                        try {
+                          console.error(
+                            "이미지 도메인:",
+                            new URL(ev.thumbnail).origin
+                          );
+                        } catch (urlError) {
+                          console.error("URL 파싱 실패:", urlError);
+                        }
+
+                        // 이미지 로딩 실패 시 빈 div로 대체
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                        const parent = target.parentElement;
+                        if (parent) {
+                          const fallbackDiv = document.createElement("div");
+                          fallbackDiv.style.cssText = `
+                            width: 40px;
+                            height: 28px;
+                            background: #f0f0f0;
+                            border: 1px solid #ddd;
+                            border-radius: 4px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 10px;
+                            color: #999;
+                          `;
+                          fallbackDiv.textContent = "X";
+                          parent.appendChild(fallbackDiv);
+                        }
+                      }}
+                      onLoad={() => {
+                        console.log("이미지 로딩 성공:", ev.thumbnail);
                       }}
                     />
                   ) : (

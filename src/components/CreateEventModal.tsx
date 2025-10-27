@@ -85,12 +85,12 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
     }
 
     // 파일 크기 및 타입 검증
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
 
     if (formData.eventThumbnail && formData.eventThumbnail.size > 0) {
       if (formData.eventThumbnail.size > MAX_FILE_SIZE) {
-        alert("행사 썸네일 파일 크기는 5MB를 초과할 수 없습니다.");
+        alert("행사 썸네일 파일 크기는 10MB를 초과할 수 없습니다.");
         return;
       }
       if (!ALLOWED_TYPES.includes(formData.eventThumbnail.type)) {
@@ -101,7 +101,7 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
 
     if (formData.hostThumbnail && formData.hostThumbnail.size > 0) {
       if (formData.hostThumbnail.size > MAX_FILE_SIZE) {
-        alert("주최기관 로고 파일 크기는 5MB를 초과할 수 없습니다.");
+        alert("주최기관 로고 파일 크기는 10MB를 초과할 수 없습니다.");
         return;
       }
       if (!ALLOWED_TYPES.includes(formData.hostThumbnail.type)) {
