@@ -225,8 +225,8 @@ export default function AppFrame() {
                     }
                     style={{ width: 120 }}
                   >
-                    <option value="true">승인만</option>
-                    <option value="false">전체</option>
+                    <option value="true">승인</option>
+                    <option value="false">미승인</option>
                   </select>
                   <select
                     className="select"
