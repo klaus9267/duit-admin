@@ -152,7 +152,7 @@ export default function AppFrame() {
   })();
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
       <section
         style={{
           flex: 1,

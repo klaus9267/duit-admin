@@ -18,7 +18,7 @@ html,
 body,
 #root {
   height: 100%;
-  overflow: hidden; /* 윈도우 스크롤 제거 */
+  /* overflow: hidden; 윈도우 스크롤 제거 - 사용자 제보 페이지를 위해 주석 처리 */
 }
 body {
   margin: 0;
