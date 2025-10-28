@@ -114,8 +114,8 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
 
   // 무한 스크롤을 위한 데이터 로딩
   const loadMore = useCallback(
-    async (pageNum: number, reset: boolean = false) => {
-      if (loading || loadedPages.has(pageNum)) return; // 이미 로드된 페이지는 건너뛰기
+    async (pageNum: number, reset: boolean = false, force: boolean = false) => {
+      if ((loading && !force) || loadedPages.has(pageNum)) return; // 이미 로드된 페이지는 건너뛰기
 
       setLoading(true);
       setError(null);
@@ -159,7 +159,8 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
     setItems([]);
     setHasMore(true);
     setLoadedPages(new Set()); // 로드된 페이지 초기화
-    loadMore(0, true);
+    // 이전 요청(in-flight)을 무시하고 강제로 초기 로드
+    loadMore(0, true, true);
   }, [sortField, sortDirection, filterApproved, includeFinished]);
 
   // 무한 스크롤 옵저버
@@ -180,7 +181,7 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
     }
 
     return () => observer.disconnect();
-  }, [hasMore, loading]); // page와 loadMore 제거
+  }, [hasMore, loading, loadMore, page]);
 
   const toggleSelect = (id: number) => {
     setSelected(prev => {
@@ -323,9 +324,7 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
                             parent.appendChild(fallbackDiv);
                           }
                         }}
-                        onLoad={() => {
-                          console.log('이미지 로딩 성공:', ev.thumbnail);
-                        }}
+                        onLoad={() => {}}
                       />
                     ) : (
                       <div
