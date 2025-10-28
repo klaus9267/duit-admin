@@ -42,6 +42,16 @@ body {
   border-color: var(--primary);
   color: #fff;
 }
+.btn.primary.delete {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+.btn.delete {
+  background: #ccc;
+  border-color: #ccc;
+  color: #fff;
+}
 .input,
 .select {
   height: 34px;

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { getHosts } from "../api/hostsClient";
+import { getHosts, deleteHost } from "../api/hostsClient";
 import { HostResponse, PaginationField, SortDirection } from "../api/types";
 
 // 이미지 URL을 절대 경로로 변환하는 함수
@@ -28,6 +28,7 @@ export default function HostsPage() {
   const [items, setItems] = useState<HostResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
   const [page, setPage] = useState<number>(0);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [totalElements, setTotalElements] = useState<number>(0);
@@ -86,6 +87,46 @@ export default function HostsPage() {
 
     return () => observer.disconnect();
   }, [page, hasMore, loading]);
+
+  // 체크박스 토글
+  const toggleSelect = (hostId: number) => {
+    setSelected((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(hostId)) {
+        newSet.delete(hostId);
+      } else {
+        newSet.add(hostId);
+      }
+      return newSet;
+    });
+  };
+
+  // 선택된 주최기관들 삭제
+  const onDeleteSelected = async () => {
+    if (selected.size === 0) return;
+
+    if (!confirm(`선택된 ${selected.size}개의 주최기관을 삭제하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      // 선택된 각 주최기관을 서버에서 삭제
+      const deletePromises = Array.from(selected).map((hostId) =>
+        deleteHost(hostId)
+      );
+
+      await Promise.all(deletePromises);
+
+      // 성공 시 로컬 상태에서도 제거
+      setItems((prev) => prev.filter((h) => !selected.has(h.id)));
+      setSelected(new Set());
+
+      alert("선택된 주최기관이 성공적으로 삭제되었습니다.");
+    } catch (error: any) {
+      alert(`삭제 실패: ${error.message}`);
+    }
+  };
+
   return (
     <div
       style={{
@@ -115,20 +156,38 @@ export default function HostsPage() {
       <table className="grid-table">
         <thead>
           <tr>
-            <th style={{ width: 60 }}>ID</th>
-            <th style={{ width: 60 }}>썸네일</th>
-            <th style={{ width: 400 }}>기관명</th>
-            <th style={{ width: 80 }}></th>
+            <th style={{ width: 32, textAlign: "center" }}>
+              <button
+                className={selected.size > 0 ? "btn primary" : "btn"}
+                onClick={onDeleteSelected}
+                disabled={selected.size === 0}
+              >
+                삭제
+              </button>
+            </th>
+            <th style={{ width: 20 }}>ID</th>
+            <th style={{ width: 40 }}>썸네일</th>
+            <th style={{ width: 300 }}>기관명</th>
+            <th style={{ width: 60 }}>편집</th>
           </tr>
         </thead>
         <tbody>
           {items.length === 0 && !loading ? (
             <tr>
-              <td colSpan={4}>데이터가 없습니다</td>
+              <td colSpan={5} style={{ textAlign: "center", padding: "20px" }}>
+                데이터가 없습니다
+              </td>
             </tr>
           ) : (
             items.map((h) => (
               <tr key={h.id}>
+                <td style={{ width: 32, textAlign: "center" }}>
+                  <input
+                    type="checkbox"
+                    checked={selected.has(h.id)}
+                    onChange={() => toggleSelect(h.id)}
+                  />
+                </td>
                 <td>{h.id}</td>
                 <td>
                   {h.thumbnail ? (
@@ -136,8 +195,8 @@ export default function HostsPage() {
                       src={getImageUrl(h.thumbnail) || h.thumbnail}
                       alt=""
                       style={{
-                        width: 40,
-                        height: 28,
+                        width: 32,
+                        height: 24,
                         objectFit: "cover",
                         border: "1px solid #ddd",
                         borderRadius: 4,
@@ -165,8 +224,8 @@ export default function HostsPage() {
                         if (parent) {
                           const fallbackDiv = document.createElement("div");
                           fallbackDiv.style.cssText = `
-                            width: 40px;
-                            height: 28px;
+                            width: 32px;
+                            height: 24px;
                             background: #f0f0f0;
                             border: 1px solid #ddd;
                             border-radius: 4px;
@@ -185,7 +244,15 @@ export default function HostsPage() {
                       }}
                     />
                   ) : (
-                    "—"
+                    <div
+                      style={{
+                        width: 32,
+                        height: 24,
+                        background: "#eee",
+                        border: "1px solid #ddd",
+                        borderRadius: 4,
+                      }}
+                    />
                   )}
                 </td>
                 <td>
@@ -194,7 +261,7 @@ export default function HostsPage() {
                   </span>
                 </td>
                 <td>
-                  <a href="#">편집</a>
+                  <button className="btn small">편집</button>
                 </td>
               </tr>
             ))
