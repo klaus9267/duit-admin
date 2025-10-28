@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { EventType, HostResponse } from "../api/types";
-import { getAllHosts } from "../api/hostsClient";
+import React, { useState, useEffect } from 'react';
+import { EventType, HostResponse } from '../api/types';
+import { getAllHosts } from '../api/hostsClient';
 
 interface Props {
   isOpen: boolean;
@@ -16,7 +16,7 @@ interface EventFormData {
   recruitmentEndAt: string | null; // null 허용
   uri: string;
   eventType: EventType;
-  hostMode: "select" | "create"; // 주최기관 선택 방식
+  hostMode: 'select' | 'create'; // 주최기관 선택 방식
   hostId: number; // 기존 주최기관 선택 시
   hostName: string; // 새 주최기관 생성 시
   eventThumbnail?: File;
@@ -24,28 +24,28 @@ interface EventFormData {
 }
 
 const EVENT_TYPE_OPTIONS = [
-  { value: EventType.CONFERENCE, label: "컨퍼런스/학술대회" },
-  { value: EventType.SEMINAR, label: "세미나" },
-  { value: EventType.WEBINAR, label: "웨비나" },
-  { value: EventType.WORKSHOP, label: "워크숍" },
-  { value: EventType.CONTEST, label: "공모전" },
-  { value: EventType.CONTINUING_EDUCATION, label: "보수교육" },
-  { value: EventType.EDUCATION, label: "교육" },
-  { value: EventType.ETC, label: "기타" },
+  { value: EventType.CONFERENCE, label: '컨퍼런스/학술대회' },
+  { value: EventType.SEMINAR, label: '세미나' },
+  { value: EventType.WEBINAR, label: '웨비나' },
+  { value: EventType.WORKSHOP, label: '워크숍' },
+  { value: EventType.CONTEST, label: '공모전' },
+  { value: EventType.CONTINUING_EDUCATION, label: '보수교육' },
+  { value: EventType.EDUCATION, label: '교육' },
+  { value: EventType.ETC, label: '기타' },
 ];
 
 export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
   const [formData, setFormData] = useState<EventFormData>({
-    title: "",
-    startAt: "",
+    title: '',
+    startAt: '',
     endAt: null, // null로 초기화
     recruitmentStartAt: null, // null로 초기화
     recruitmentEndAt: null, // null로 초기화
-    uri: "",
+    uri: '',
     eventType: EventType.CONFERENCE,
-    hostMode: "select",
+    hostMode: 'select',
     hostId: 0,
-    hostName: "",
+    hostName: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -62,8 +62,8 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
         const hostList = await getAllHosts();
         setHosts(hostList);
       } catch (error) {
-        console.error("주최기관 목록 로드 실패:", error);
-        alert("주최기관 목록을 불러오는데 실패했습니다.");
+        console.error('주최기관 목록 로드 실패:', error);
+        alert('주최기관 목록을 불러오는데 실패했습니다.');
       } finally {
         setLoadingHosts(false);
       }
@@ -77,26 +77,22 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
 
     // 모집 시작일 < 모집 종료일
     if (formData.recruitmentStartAt && formData.recruitmentEndAt) {
-      if (
-        new Date(formData.recruitmentStartAt) >=
-        new Date(formData.recruitmentEndAt)
-      ) {
-        newErrors.recruitmentEndAt =
-          "모집 종료일은 모집 시작일보다 늦어야 합니다";
+      if (new Date(formData.recruitmentStartAt) >= new Date(formData.recruitmentEndAt)) {
+        newErrors.recruitmentEndAt = '모집 종료일은 모집 시작일보다 늦어야 합니다';
       }
     }
 
     // 행사 시작일 < 행사 종료일
     if (formData.startAt && formData.endAt) {
       if (new Date(formData.startAt) >= new Date(formData.endAt)) {
-        newErrors.endAt = "행사 종료일은 행사 시작일보다 늦어야 합니다";
+        newErrors.endAt = '행사 종료일은 행사 시작일보다 늦어야 합니다';
       }
     }
 
     // 모집 종료일 < 행사 시작일
     if (formData.recruitmentEndAt && formData.startAt) {
       if (new Date(formData.recruitmentEndAt) >= new Date(formData.startAt)) {
-        newErrors.startAt = "행사 시작일은 모집 종료일보다 늦어야 합니다";
+        newErrors.startAt = '행사 시작일은 모집 종료일보다 늦어야 합니다';
       }
     }
 
@@ -113,26 +109,26 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
 
     // 파일 크기 및 타입 검증
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
+    const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
 
     if (formData.eventThumbnail && formData.eventThumbnail.size > 0) {
       if (formData.eventThumbnail.size > MAX_FILE_SIZE) {
-        alert("행사 썸네일 파일 크기는 10MB를 초과할 수 없습니다.");
+        alert('행사 썸네일 파일 크기는 10MB를 초과할 수 없습니다.');
         return;
       }
       if (!ALLOWED_TYPES.includes(formData.eventThumbnail.type)) {
-        alert("행사 썸네일은 JPG, PNG, GIF 파일만 업로드 가능합니다.");
+        alert('행사 썸네일은 JPG, PNG, GIF 파일만 업로드 가능합니다.');
         return;
       }
     }
 
     if (formData.hostThumbnail && formData.hostThumbnail.size > 0) {
       if (formData.hostThumbnail.size > MAX_FILE_SIZE) {
-        alert("주최기관 로고 파일 크기는 10MB를 초과할 수 없습니다.");
+        alert('주최기관 로고 파일 크기는 10MB를 초과할 수 없습니다.');
         return;
       }
       if (!ALLOWED_TYPES.includes(formData.hostThumbnail.type)) {
-        alert("주최기관 로고는 JPG, PNG, GIF 파일만 업로드 가능합니다.");
+        alert('주최기관 로고는 JPG, PNG, GIF 파일만 업로드 가능합니다.');
         return;
       }
     }
@@ -141,7 +137,7 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
 
     // JSON 데이터를 "data" 키로 추가 (백엔드 @RequestPart("data")와 매칭)
     submitData.append(
-      "data",
+      'data',
       JSON.stringify({
         title: formData.title,
         startAt: formData.startAt,
@@ -150,46 +146,36 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
         recruitmentEndAt: formData.recruitmentEndAt,
         uri: formData.uri,
         eventType: formData.eventType,
-        ...(formData.hostMode === "select"
-          ? { hostId: formData.hostId }
-          : { hostName: formData.hostName }),
+        ...(formData.hostMode === 'select' ? { hostId: formData.hostId } : { hostName: formData.hostName }),
       })
     );
 
     // 파일이 실제로 선택되었을 때만 추가 (백엔드 @RequestPart와 매칭)
     if (formData.eventThumbnail && formData.eventThumbnail.size > 0) {
-      submitData.append("eventThumbnail", formData.eventThumbnail);
+      submitData.append('eventThumbnail', formData.eventThumbnail);
     }
     // 새 주최기관 생성 시에만 주최기관 로고 업로드 가능
-    if (
-      formData.hostMode === "create" &&
-      formData.hostThumbnail &&
-      formData.hostThumbnail.size > 0
-    ) {
-      submitData.append("hostThumbnail", formData.hostThumbnail);
+    if (formData.hostMode === 'create' && formData.hostThumbnail && formData.hostThumbnail.size > 0) {
+      submitData.append('hostThumbnail', formData.hostThumbnail);
     }
 
     onSubmit(submitData);
   };
 
-  const handleInputChange = (
-    field: keyof EventFormData,
-    value: string | File
-  ) => {
-    let processedValue: string | File | null = value;
+  const handleInputChange = (field: keyof EventFormData, value: string | File) => {
+    let processedValue: string | File | null | number = value;
     // 날짜/시간 필드가 비어있으면 null로 처리
-    if (
-      typeof value === "string" &&
-      (field === "endAt" ||
-        field === "recruitmentStartAt" ||
-        field === "recruitmentEndAt")
-    ) {
-      processedValue = value === "" ? null : value;
+    if (typeof value === 'string' && (field === 'endAt' || field === 'recruitmentStartAt' || field === 'recruitmentEndAt')) {
+      processedValue = value === '' ? null : value;
     }
-    setFormData((prev) => ({ ...prev, [field]: processedValue }));
+    // hostId 필드는 숫자로 변환
+    if (field === 'hostId' && typeof value === 'string') {
+      processedValue = Number(value);
+    }
+    setFormData(prev => ({ ...prev, [field]: processedValue }));
     // 해당 필드의 에러 제거
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+      setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -198,50 +184,48 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
   return (
     <div
       style={{
-        position: "fixed",
+        position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        background: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        background: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         zIndex: 1000,
       }}
     >
       <div
         style={{
-          background: "white",
-          borderRadius: "12px",
-          padding: "24px 32px",
-          width: "90vw",
-          maxWidth: "900px",
-          maxHeight: "85vh",
-          overflow: "auto",
-          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-          margin: "20px",
+          background: 'white',
+          borderRadius: '12px',
+          padding: '24px 32px',
+          width: '90vw',
+          maxWidth: '900px',
+          maxHeight: '85vh',
+          overflow: 'auto',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+          margin: '20px',
         }}
       >
         <div
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "20px",
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '20px',
           }}
         >
-          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "700" }}>
-            행사 생성
-          </h2>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>행사 생성</h2>
           <button
             onClick={onClose}
             style={{
-              background: "none",
-              border: "none",
-              fontSize: "24px",
-              cursor: "pointer",
-              color: "#666",
+              background: 'none',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              color: '#666',
             }}
           >
             ×
@@ -249,15 +233,15 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: "grid", gap: "16px" }}>
+          <div style={{ display: 'grid', gap: '16px' }}>
             {/* 제목 */}
             <div>
               <label
                 style={{
-                  display: "block",
-                  marginBottom: "6px",
-                  fontWeight: "500",
-                  fontSize: "14px",
+                  display: 'block',
+                  marginBottom: '6px',
+                  fontWeight: '500',
+                  fontSize: '14px',
                 }}
               >
                 제목 *
@@ -265,11 +249,11 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
               <input
                 type="text"
                 value={formData.title}
-                onChange={(e) => handleInputChange("title", e.target.value)}
+                onChange={e => handleInputChange('title', e.target.value)}
                 className="input"
                 style={{
-                  width: "100%",
-                  boxSizing: "border-box",
+                  width: '100%',
+                  boxSizing: 'border-box',
                 }}
                 required
               />
@@ -278,18 +262,18 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
             {/* 행사 시작일/종료일 */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "20px",
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '20px',
               }}
             >
-              <div style={{ minWidth: "0" }}>
+              <div style={{ minWidth: '0' }}>
                 <label
                   style={{
-                    display: "block",
-                    marginBottom: "6px",
-                    fontWeight: "500",
-                    fontSize: "14px",
+                    display: 'block',
+                    marginBottom: '6px',
+                    fontWeight: '500',
+                    fontSize: '14px',
                   }}
                 >
                   행사 시작일 *
@@ -297,56 +281,56 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
                 <input
                   type="datetime-local"
                   value={formData.startAt}
-                  onChange={(e) => handleInputChange("startAt", e.target.value)}
+                  onChange={e => handleInputChange('startAt', e.target.value)}
                   className="input"
                   style={{
-                    width: "100%",
-                    minWidth: "200px",
-                    boxSizing: "border-box",
+                    width: '100%',
+                    minWidth: '200px',
+                    boxSizing: 'border-box',
                   }}
                   required
                 />
                 {errors.startAt && (
                   <div
                     style={{
-                      color: "#dc2626",
-                      fontSize: "12px",
-                      marginTop: "4px",
+                      color: '#dc2626',
+                      fontSize: '12px',
+                      marginTop: '4px',
                     }}
                   >
                     {errors.startAt}
                   </div>
                 )}
               </div>
-              <div style={{ minWidth: "0" }}>
+              <div style={{ minWidth: '0' }}>
                 <label
                   style={{
-                    display: "block",
-                    marginBottom: "6px",
-                    fontWeight: "500",
-                    fontSize: "14px",
+                    display: 'block',
+                    marginBottom: '6px',
+                    fontWeight: '500',
+                    fontSize: '14px',
                   }}
                 >
                   행사 종료일
                 </label>
                 <input
                   type="datetime-local"
-                  value={formData.endAt || ""} // null일 경우 빈 문자열
-                  onChange={(e) => handleInputChange("endAt", e.target.value)}
+                  value={formData.endAt || ''} // null일 경우 빈 문자열
+                  onChange={e => handleInputChange('endAt', e.target.value)}
                   className="input"
                   style={{
-                    width: "100%",
-                    minWidth: "200px",
-                    boxSizing: "border-box",
+                    width: '100%',
+                    minWidth: '200px',
+                    boxSizing: 'border-box',
                   }}
                   // required 속성 제거
                 />
                 {errors.endAt && (
                   <div
                     style={{
-                      color: "#dc2626",
-                      fontSize: "12px",
-                      marginTop: "4px",
+                      color: '#dc2626',
+                      fontSize: '12px',
+                      marginTop: '4px',
                     }}
                   >
                     {errors.endAt}
@@ -358,66 +342,62 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
             {/* 모집 시작일/종료일 */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "20px",
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '20px',
               }}
             >
-              <div style={{ minWidth: "0" }}>
+              <div style={{ minWidth: '0' }}>
                 <label
                   style={{
-                    display: "block",
-                    marginBottom: "6px",
-                    fontWeight: "500",
-                    fontSize: "14px",
+                    display: 'block',
+                    marginBottom: '6px',
+                    fontWeight: '500',
+                    fontSize: '14px',
                   }}
                 >
                   모집 시작일
                 </label>
                 <input
                   type="datetime-local"
-                  value={formData.recruitmentStartAt || ""} // null일 경우 빈 문자열
-                  onChange={(e) =>
-                    handleInputChange("recruitmentStartAt", e.target.value)
-                  }
+                  value={formData.recruitmentStartAt || ''} // null일 경우 빈 문자열
+                  onChange={e => handleInputChange('recruitmentStartAt', e.target.value)}
                   className="input"
                   style={{
-                    width: "100%",
-                    minWidth: "200px",
-                    boxSizing: "border-box",
+                    width: '100%',
+                    minWidth: '200px',
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
-              <div style={{ minWidth: "0" }}>
+              <div style={{ minWidth: '0' }}>
                 <label
                   style={{
-                    display: "block",
-                    marginBottom: "6px",
-                    fontWeight: "500",
-                    fontSize: "14px",
+                    display: 'block',
+                    marginBottom: '6px',
+                    fontWeight: '500',
+                    fontSize: '14px',
                   }}
                 >
                   모집 종료일
                 </label>
                 <input
                   type="datetime-local"
-                  value={formData.recruitmentEndAt || ""} // null일 경우 빈 문자열
-                  onChange={(e) =>
-                    handleInputChange("recruitmentEndAt", e.target.value)
-                  }
+                  value={formData.recruitmentEndAt || ''} // null일 경우 빈 문자열
+                  onChange={e => handleInputChange('recruitmentEndAt', e.target.value)}
                   className="input"
                   style={{
-                    width: "100%",
-                    minWidth: "200px",
-                    boxSizing: "border-box",
+                    width: '100%',
+                    minWidth: '200px',
+                    boxSizing: 'border-box',
                   }}
                 />
                 {errors.recruitmentEndAt && (
                   <div
                     style={{
-                      color: "#dc2626",
-                      fontSize: "12px",
-                      marginTop: "4px",
+                      color: '#dc2626',
+                      fontSize: '12px',
+                      marginTop: '4px',
                     }}
                   >
                     {errors.recruitmentEndAt}
@@ -430,10 +410,10 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
             <div>
               <label
                 style={{
-                  display: "block",
-                  marginBottom: "6px",
-                  fontWeight: "500",
-                  fontSize: "14px",
+                  display: 'block',
+                  marginBottom: '6px',
+                  fontWeight: '500',
+                  fontSize: '14px',
                 }}
               >
                 행사 URL *
@@ -441,11 +421,11 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
               <input
                 type="url"
                 value={formData.uri}
-                onChange={(e) => handleInputChange("uri", e.target.value)}
+                onChange={e => handleInputChange('uri', e.target.value)}
                 className="input"
                 style={{
-                  width: "100%",
-                  boxSizing: "border-box",
+                  width: '100%',
+                  boxSizing: 'border-box',
                 }}
                 placeholder="https://example.com/event"
                 required
@@ -456,27 +436,25 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
             <div>
               <label
                 style={{
-                  display: "block",
-                  marginBottom: "6px",
-                  fontWeight: "500",
-                  fontSize: "14px",
+                  display: 'block',
+                  marginBottom: '6px',
+                  fontWeight: '500',
+                  fontSize: '14px',
                 }}
               >
                 행사 유형 *
               </label>
               <select
                 value={formData.eventType}
-                onChange={(e) =>
-                  handleInputChange("eventType", e.target.value as EventType)
-                }
+                onChange={e => handleInputChange('eventType', e.target.value as EventType)}
                 className="select"
                 style={{
-                  width: "100%",
-                  boxSizing: "border-box",
+                  width: '100%',
+                  boxSizing: 'border-box',
                 }}
                 required
               >
-                {EVENT_TYPE_OPTIONS.map((option) => (
+                {EVENT_TYPE_OPTIONS.map(option => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -485,69 +463,42 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
             </div>
 
             {/* 주최기관 선택 방식 */}
-            <div style={{ gridColumn: "1 / -1" }}>
+            <div style={{ gridColumn: '1 / -1' }}>
               <label
                 style={{
-                  display: "block",
-                  marginBottom: "6px",
-                  fontWeight: "500",
-                  fontSize: "14px",
+                  display: 'block',
+                  marginBottom: '6px',
+                  fontWeight: '500',
+                  fontSize: '14px',
                 }}
               >
                 주최기관 *
               </label>
-              <div
-                style={{ display: "flex", gap: "12px", marginBottom: "12px" }}
-              >
-                <label
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
-                >
-                  <input
-                    type="radio"
-                    name="hostMode"
-                    value="select"
-                    checked={formData.hostMode === "select"}
-                    onChange={(e) =>
-                      handleInputChange("hostMode", e.target.value)
-                    }
-                  />
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input type="radio" name="hostMode" value="select" checked={formData.hostMode === 'select'} onChange={e => handleInputChange('hostMode', e.target.value)} />
                   기존 주최기관 선택
                 </label>
-                <label
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
-                >
-                  <input
-                    type="radio"
-                    name="hostMode"
-                    value="create"
-                    checked={formData.hostMode === "create"}
-                    onChange={(e) =>
-                      handleInputChange("hostMode", e.target.value)
-                    }
-                  />
-                  새 주최기관 생성
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input type="radio" name="hostMode" value="create" checked={formData.hostMode === 'create'} onChange={e => handleInputChange('hostMode', e.target.value)} />새 주최기관 생성
                 </label>
               </div>
 
               {/* 기존 주최기관 선택 */}
-              {formData.hostMode === "select" && (
+              {formData.hostMode === 'select' && (
                 <select
                   value={formData.hostId}
-                  onChange={(e) =>
-                    handleInputChange("hostId", Number(e.target.value))
-                  }
+                  onChange={e => handleInputChange('hostId', e.target.value)}
                   className="select"
                   style={{
-                    width: "100%",
-                    boxSizing: "border-box",
+                    width: '100%',
+                    boxSizing: 'border-box',
                   }}
                   required
                   disabled={loadingHosts}
                 >
-                  <option value={0}>
-                    {loadingHosts ? "로딩 중..." : "주최기관을 선택하세요"}
-                  </option>
-                  {hosts.map((host) => (
+                  <option value={0}>{loadingHosts ? '로딩 중...' : '주최기관을 선택하세요'}</option>
+                  {hosts.map(host => (
                     <option key={host.id} value={host.id}>
                       {host.name}
                     </option>
@@ -556,18 +507,16 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
               )}
 
               {/* 새 주최기관 생성 */}
-              {formData.hostMode === "create" && (
+              {formData.hostMode === 'create' && (
                 <input
                   type="text"
                   value={formData.hostName}
-                  onChange={(e) =>
-                    handleInputChange("hostName", e.target.value)
-                  }
+                  onChange={e => handleInputChange('hostName', e.target.value)}
                   placeholder="새 주최기관명을 입력하세요"
                   className="input"
                   style={{
-                    width: "100%",
-                    boxSizing: "border-box",
+                    width: '100%',
+                    boxSizing: 'border-box',
                   }}
                   required
                 />
@@ -577,18 +526,18 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
             {/* 파일 업로드 */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "20px",
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '20px',
               }}
             >
-              <div style={{ minWidth: "0" }}>
+              <div style={{ minWidth: '0' }}>
                 <label
                   style={{
-                    display: "block",
-                    marginBottom: "6px",
-                    fontWeight: "500",
-                    fontSize: "14px",
+                    display: 'block',
+                    marginBottom: '6px',
+                    fontWeight: '500',
+                    fontSize: '14px',
                   }}
                 >
                   행사 썸네일
@@ -596,29 +545,24 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) =>
-                    handleInputChange(
-                      "eventThumbnail",
-                      e.target.files?.[0] || new File([], "")
-                    )
-                  }
+                  onChange={e => handleInputChange('eventThumbnail', e.target.files?.[0] || new File([], ''))}
                   className="input"
                   style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    lineHeight: "34px",
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    lineHeight: '34px',
                   }}
                 />
               </div>
               {/* 새 주최기관 생성 시에만 주최기관 로고 업로드 표시 */}
-              {formData.hostMode === "create" && (
-                <div style={{ minWidth: "0" }}>
+              {formData.hostMode === 'create' && (
+                <div style={{ minWidth: '0' }}>
                   <label
                     style={{
-                      display: "block",
-                      marginBottom: "6px",
-                      fontWeight: "500",
-                      fontSize: "14px",
+                      display: 'block',
+                      marginBottom: '6px',
+                      fontWeight: '500',
+                      fontSize: '14px',
                     }}
                   >
                     주최기관 로고
@@ -626,17 +570,12 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) =>
-                      handleInputChange(
-                        "hostThumbnail",
-                        e.target.files?.[0] || new File([], "")
-                      )
-                    }
+                    onChange={e => handleInputChange('hostThumbnail', e.target.files?.[0] || new File([], ''))}
                     className="input"
                     style={{
-                      width: "100%",
-                      boxSizing: "border-box",
-                      lineHeight: "34px",
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      lineHeight: '34px',
                     }}
                   />
                 </div>
@@ -647,10 +586,10 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
           {/* 버튼 */}
           <div
             style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "flex-end",
-              marginTop: "20px",
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end',
+              marginTop: '20px',
             }}
           >
             <button type="button" onClick={onClose} className="btn">

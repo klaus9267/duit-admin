@@ -73,7 +73,12 @@ export default function EventSubmissionPage() {
   }, []);
 
   const handleInputChange = (field: keyof SubmissionFormData, value: string | File) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    let processedValue: string | File | number = value;
+    // hostId 필드는 숫자로 변환
+    if (field === 'hostId' && typeof value === 'string') {
+      processedValue = Number(value);
+    }
+    setFormData(prev => ({ ...prev, [field]: processedValue }));
     // 해당 필드의 에러 제거
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -557,7 +562,7 @@ export default function EventSubmissionPage() {
                   {formData.hostMode === 'select' && (
                     <select
                       value={formData.hostId}
-                      onChange={e => handleInputChange('hostId', Number(e.target.value))}
+                      onChange={e => handleInputChange('hostId', e.target.value)}
                       style={{
                         width: '100%',
                         padding: '12px 16px',
