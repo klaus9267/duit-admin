@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import CreateHostModal from '../components/CreateHostModal';
 import { getHosts, deleteHost } from '../api/hostsClient';
 import { HostResponse, PaginationField, SortDirection } from '../api/types';
 
@@ -29,6 +30,7 @@ export default function HostsPage() {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [totalElements, setTotalElements] = useState<number>(0);
   const observerRef = useRef<HTMLDivElement>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
 
   // 무한 스크롤을 위한 데이터 로딩
   const loadMore = useCallback(
@@ -145,7 +147,7 @@ export default function HostsPage() {
     >
       {error ? <div style={{ padding: 12, color: '#b91c1c' }}>오류: {error}</div> : null}
 
-      {/* 전체 개수 표시 */}
+      {/* 전체 개수 및 액션 */}
       <div
         style={{
           padding: '8px 12px',
@@ -153,9 +155,17 @@ export default function HostsPage() {
           borderBottom: '1px solid var(--border)',
           fontSize: '14px',
           color: '#666',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
         }}
       >
-        총 {totalElements}개 주최기관
+        <span>총 {totalElements}개 주최기관</span>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn primary" onClick={() => setIsCreateOpen(true)}>
+            주최기관 생성
+          </button>
+        </div>
       </div>
 
       <div style={{ overflow: 'auto', flex: 1, position: 'relative' }}>
@@ -287,6 +297,19 @@ export default function HostsPage() {
             }}
           />
         </div>
+      )}
+
+      {isCreateOpen && (
+        <CreateHostModal
+          isOpen={isCreateOpen}
+          onClose={() => setIsCreateOpen(false)}
+          onCreated={() => {
+            setItems([]);
+            setPage(0);
+            setHasMore(true);
+            loadMore(0, true);
+          }}
+        />
       )}
     </div>
   );
