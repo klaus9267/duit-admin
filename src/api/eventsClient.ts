@@ -241,3 +241,31 @@ export async function deleteEvent(eventId: number, token?: string): Promise<void
     throw new Error(`Failed to delete event: ${res.status} ${text}`);
   }
 }
+
+// 행사 다건 삭제 (관리자) - DELETE /api/v1/events/batch?eventIds=1&eventIds=2
+export async function deleteEventsBatch(eventIds: number[], token?: string): Promise<void> {
+  if (eventIds.length === 0) return;
+  const params = new URLSearchParams();
+  for (const id of eventIds) params.append('eventIds', String(id));
+  const url = `${API_BASE}/api/v1/events/batch?${params.toString()}`;
+
+  const authToken = token || checkAuthAndRedirect();
+
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    },
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('admin_token');
+      window.location.href = '/';
+      throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+    const text = await res.text();
+    throw new Error(`Failed to delete events (batch): ${res.status} ${text}`);
+  }
+}

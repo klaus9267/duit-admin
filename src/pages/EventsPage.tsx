@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { EventResponse, PaginationField, SortDirection, EventType } from '../api/types';
-import { getEvents, deleteEvent } from '../api/eventsClient';
+import { getEvents, deleteEventsBatch } from '../api/eventsClient';
 
 // 이미지 URL을 절대 경로로 변환하는 함수
 function getImageUrl(thumbnail: string | null): string | null {
@@ -200,10 +200,8 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
     }
 
     try {
-      // 선택된 각 행사를 서버에서 삭제
-      const deletePromises = Array.from(selected).map(eventId => deleteEvent(eventId));
-
-      await Promise.all(deletePromises);
+      // 배치 삭제 API 호출
+      await deleteEventsBatch(Array.from(selected));
 
       // 성공 시 로컬 상태에서도 제거
       setItems(prev => prev.filter(ev => !selected.has(ev.id)));
