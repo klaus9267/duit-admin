@@ -150,7 +150,7 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
         setLoading(false);
       }
     },
-    [loading, sortField, sortDirection, filterApproved, includeFinished, loadedPages]
+    [loading, sortField, sortDirection, filterApproved, includeFinished] // loadedPages 제거
   );
 
   // 필터 변경 시 초기화
@@ -172,7 +172,7 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
           loadMore(nextPage, false);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 1.0, rootMargin: '0px 0px 100px 0px' } // 스크롤 끝에서 100px 전에 트리거
     );
 
     if (observerRef.current) {
@@ -180,7 +180,7 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
     }
 
     return () => observer.disconnect();
-  }, [hasMore, loading, page, loadMore]);
+  }, [hasMore, loading]); // page와 loadMore 제거
 
   const toggleSelect = (id: number) => {
     setSelected(prev => {
@@ -399,10 +399,34 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
             )}
           </tbody>
         </table>
+
+        {/* 무한 스크롤 트리거 - 테이블 맨 아래에 위치 */}
+        <div ref={observerRef} style={{ height: '1px', margin: 0 }} />
       </div>
 
-      {/* 무한 스크롤 트리거 - 보이지 않는 트리거 */}
-      <div ref={observerRef} style={{ height: '1px', margin: 0, flexShrink: 0 }} />
+      {/* 로딩 스피너 */}
+      {loading && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '20px',
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              width: '24px',
+              height: '24px',
+              border: '2px solid #f3f3f3',
+              borderTop: '2px solid var(--primary)',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
