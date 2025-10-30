@@ -149,7 +149,7 @@ export default function EventSubmissionPage() {
         JSON.stringify({
           title: formData.title,
           startAt: formData.startAt,
-          endAt: formData.endAt,
+          endAt: formData.endAt || null,
           recruitmentStartAt: formData.recruitmentStartAt || null,
           recruitmentEndAt: formData.recruitmentEndAt || null,
           uri: formData.uri,
