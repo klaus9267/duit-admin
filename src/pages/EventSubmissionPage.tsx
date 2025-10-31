@@ -219,7 +219,7 @@ export default function EventSubmissionPage() {
           style={{
             background: "white",
             borderRadius: "16px",
-            padding: "40px",
+            padding: "40px 20px",
             maxWidth: "500px",
             width: "100%",
             textAlign: "center",
@@ -244,7 +244,7 @@ export default function EventSubmissionPage() {
           </div>
           <h2
             style={{
-              fontSize: "24px",
+              fontSize: "clamp(20px, 5vw, 24px)",
               fontWeight: "700",
               color: "#1f2937",
               margin: "0 0 16px 0",
@@ -255,7 +255,7 @@ export default function EventSubmissionPage() {
           <p
             style={{
               color: "#6b7280",
-              fontSize: "16px",
+              fontSize: "clamp(14px, 4vw, 16px)",
               lineHeight: "1.6",
               margin: "0 0 32px 0",
             }}
@@ -271,10 +271,13 @@ export default function EventSubmissionPage() {
               color: "white",
               border: "none",
               borderRadius: "8px",
-              padding: "12px 24px",
+              padding: "14px 28px",
               fontSize: "16px",
               fontWeight: "600",
               cursor: "pointer",
+              minHeight: "44px",
+              width: "100%",
+              maxWidth: "300px",
             }}
           >
             다른 행사 제보하기
@@ -289,7 +292,7 @@ export default function EventSubmissionPage() {
       style={{
         minHeight: "100vh",
         background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        padding: "20px",
+        padding: "12px",
       }}
     >
       <div
@@ -302,12 +305,13 @@ export default function EventSubmissionPage() {
         <div
           style={{
             textAlign: "center",
-            marginBottom: "40px",
+            marginBottom: "24px",
+            padding: "0 8px",
           }}
         >
           <h1
             style={{
-              fontSize: "32px",
+              fontSize: "clamp(24px, 6vw, 32px)",
               fontWeight: "700",
               color: "white",
               margin: "0 0 8px 0",
@@ -317,7 +321,7 @@ export default function EventSubmissionPage() {
           </h1>
           <p
             style={{
-              fontSize: "18px",
+              fontSize: "clamp(14px, 4vw, 18px)",
               color: "rgba(255, 255, 255, 0.8)",
               margin: "0",
             }}
@@ -331,7 +335,7 @@ export default function EventSubmissionPage() {
           style={{
             background: "white",
             borderRadius: "16px",
-            padding: "32px",
+            padding: "24px 16px",
             boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
           }}
         >
@@ -339,16 +343,16 @@ export default function EventSubmissionPage() {
             <div>
               <h3
                 style={{
-                  fontSize: "20px",
+                  fontSize: "clamp(18px, 5vw, 20px)",
                   fontWeight: "600",
                   color: "#1f2937",
-                  margin: "0 0 24px 0",
+                  margin: "0 0 20px 0",
                 }}
               >
                 행사 정보
               </h3>
 
-              <div style={{ display: "grid", gap: "20px" }}>
+              <div style={{ display: "grid", gap: "16px" }}>
                 {/* 행사 제목 */}
                 <div>
                   <label
@@ -357,6 +361,7 @@ export default function EventSubmissionPage() {
                       marginBottom: "8px",
                       fontWeight: "500",
                       color: "#374151",
+                      fontSize: "clamp(14px, 4vw, 16px)",
                     }}
                   >
                     행사 제목 *
@@ -367,11 +372,12 @@ export default function EventSubmissionPage() {
                     onChange={(e) => handleInputChange("title", e.target.value)}
                     style={{
                       width: "100%",
-                      padding: "12px 16px",
+                      padding: "14px 16px",
                       border: "1px solid #d1d5db",
                       borderRadius: "8px",
                       fontSize: "16px",
                       boxSizing: "border-box",
+                      minHeight: "44px",
                     }}
                     placeholder="행사 제목을 입력해주세요"
                   />
@@ -392,7 +398,7 @@ export default function EventSubmissionPage() {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
                     gap: "16px",
                   }}
                 >
@@ -403,6 +409,7 @@ export default function EventSubmissionPage() {
                         marginBottom: "8px",
                         fontWeight: "500",
                         color: "#374151",
+                        fontSize: "clamp(14px, 4vw, 16px)",
                       }}
                     >
                       행사 시작일 *
@@ -415,11 +422,12 @@ export default function EventSubmissionPage() {
                       }
                       style={{
                         width: "100%",
-                        padding: "12px 16px",
+                        padding: "14px 16px",
                         border: "1px solid #d1d5db",
                         borderRadius: "8px",
                         fontSize: "16px",
                         boxSizing: "border-box",
+                        minHeight: "44px",
                       }}
                     />
                     {errors.startAt && (
@@ -441,6 +449,7 @@ export default function EventSubmissionPage() {
                         marginBottom: "8px",
                         fontWeight: "500",
                         color: "#374151",
+                        fontSize: "clamp(14px, 4vw, 16px)",
                       }}
                     >
                       행사 종료일
@@ -453,11 +462,12 @@ export default function EventSubmissionPage() {
                       }
                       style={{
                         width: "100%",
-                        padding: "12px 16px",
+                        padding: "14px 16px",
                         border: "1px solid #d1d5db",
                         borderRadius: "8px",
                         fontSize: "16px",
                         boxSizing: "border-box",
+                        minHeight: "44px",
                       }}
                     />
                     {errors.endAt && (
@@ -478,7 +488,7 @@ export default function EventSubmissionPage() {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
                     gap: "16px",
                   }}
                 >
@@ -489,6 +499,7 @@ export default function EventSubmissionPage() {
                         marginBottom: "8px",
                         fontWeight: "500",
                         color: "#374151",
+                        fontSize: "clamp(14px, 4vw, 16px)",
                       }}
                     >
                       모집 시작일
@@ -501,11 +512,12 @@ export default function EventSubmissionPage() {
                       }
                       style={{
                         width: "100%",
-                        padding: "12px 16px",
+                        padding: "14px 16px",
                         border: "1px solid #d1d5db",
                         borderRadius: "8px",
                         fontSize: "16px",
                         boxSizing: "border-box",
+                        minHeight: "44px",
                       }}
                     />
                   </div>
@@ -516,6 +528,7 @@ export default function EventSubmissionPage() {
                         marginBottom: "8px",
                         fontWeight: "500",
                         color: "#374151",
+                        fontSize: "clamp(14px, 4vw, 16px)",
                       }}
                     >
                       모집 종료일
@@ -528,11 +541,12 @@ export default function EventSubmissionPage() {
                       }
                       style={{
                         width: "100%",
-                        padding: "12px 16px",
+                        padding: "14px 16px",
                         border: "1px solid #d1d5db",
                         borderRadius: "8px",
                         fontSize: "16px",
                         boxSizing: "border-box",
+                        minHeight: "44px",
                       }}
                     />
                     {errors.recruitmentEndAt && (
@@ -557,6 +571,7 @@ export default function EventSubmissionPage() {
                       marginBottom: "8px",
                       fontWeight: "500",
                       color: "#374151",
+                      fontSize: "clamp(14px, 4vw, 16px)",
                     }}
                   >
                     행사 URL *
@@ -567,11 +582,12 @@ export default function EventSubmissionPage() {
                     onChange={(e) => handleInputChange("uri", e.target.value)}
                     style={{
                       width: "100%",
-                      padding: "12px 16px",
+                      padding: "14px 16px",
                       border: "1px solid #d1d5db",
                       borderRadius: "8px",
                       fontSize: "16px",
                       boxSizing: "border-box",
+                      minHeight: "44px",
                     }}
                     placeholder="https://example.com/event"
                   />
@@ -596,6 +612,7 @@ export default function EventSubmissionPage() {
                       marginBottom: "8px",
                       fontWeight: "500",
                       color: "#374151",
+                      fontSize: "clamp(14px, 4vw, 16px)",
                     }}
                   >
                     행사 유형 *
@@ -610,11 +627,12 @@ export default function EventSubmissionPage() {
                     }
                     style={{
                       width: "100%",
-                      padding: "12px 16px",
+                      padding: "14px 16px",
                       border: "1px solid #d1d5db",
                       borderRadius: "8px",
                       fontSize: "16px",
                       boxSizing: "border-box",
+                      minHeight: "44px",
                     }}
                   >
                     {EVENT_TYPE_OPTIONS.map((option) => (
@@ -633,6 +651,7 @@ export default function EventSubmissionPage() {
                       marginBottom: "8px",
                       fontWeight: "500",
                       color: "#374151",
+                      fontSize: "clamp(14px, 4vw, 16px)",
                     }}
                   >
                     주최기관 *
@@ -640,6 +659,7 @@ export default function EventSubmissionPage() {
                   <div
                     style={{
                       display: "flex",
+                      flexWrap: "wrap",
                       gap: "12px",
                       marginBottom: "12px",
                     }}
@@ -649,6 +669,8 @@ export default function EventSubmissionPage() {
                         display: "flex",
                         alignItems: "center",
                         gap: "6px",
+                        fontSize: "clamp(14px, 4vw, 16px)",
+                        cursor: "pointer",
                       }}
                     >
                       <input
@@ -659,6 +681,7 @@ export default function EventSubmissionPage() {
                         onChange={(e) =>
                           handleInputChange("hostMode", e.target.value)
                         }
+                        style={{ width: "18px", height: "18px", cursor: "pointer" }}
                       />
                       기존 주최기관 선택
                     </label>
@@ -667,6 +690,8 @@ export default function EventSubmissionPage() {
                         display: "flex",
                         alignItems: "center",
                         gap: "6px",
+                        fontSize: "clamp(14px, 4vw, 16px)",
+                        cursor: "pointer",
                       }}
                     >
                       <input
@@ -677,6 +702,7 @@ export default function EventSubmissionPage() {
                         onChange={(e) =>
                           handleInputChange("hostMode", e.target.value)
                         }
+                        style={{ width: "18px", height: "18px", cursor: "pointer" }}
                       />
                       새 주최기관 생성
                     </label>
@@ -691,11 +717,12 @@ export default function EventSubmissionPage() {
                       }
                       style={{
                         width: "100%",
-                        padding: "12px 16px",
+                        padding: "14px 16px",
                         border: "1px solid #d1d5db",
                         borderRadius: "8px",
                         fontSize: "16px",
                         boxSizing: "border-box",
+                        minHeight: "44px",
                       }}
                       disabled={loadingHosts}
                     >
@@ -721,11 +748,12 @@ export default function EventSubmissionPage() {
                       placeholder="새 주최기관명을 입력하세요"
                       style={{
                         width: "100%",
-                        padding: "12px 16px",
+                        padding: "14px 16px",
                         border: "1px solid #d1d5db",
                         borderRadius: "8px",
                         fontSize: "16px",
                         boxSizing: "border-box",
+                        minHeight: "44px",
                       }}
                     />
                   )}
@@ -764,7 +792,7 @@ export default function EventSubmissionPage() {
                 >
                   <h4
                     style={{
-                      fontSize: "18px",
+                      fontSize: "clamp(16px, 4.5vw, 18px)",
                       fontWeight: "600",
                       color: "#1f2937",
                       margin: "0 0 20px 0",
@@ -776,8 +804,8 @@ export default function EventSubmissionPage() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "20px",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                      gap: "16px",
                     }}
                   >
                     {/* 행사 썸네일 */}
@@ -788,6 +816,7 @@ export default function EventSubmissionPage() {
                           marginBottom: "8px",
                           fontWeight: "500",
                           color: "#374151",
+                          fontSize: "clamp(14px, 4vw, 16px)",
                         }}
                       >
                         행사 썸네일
@@ -803,11 +832,12 @@ export default function EventSubmissionPage() {
                         }
                         style={{
                           width: "100%",
-                          padding: "12px 16px",
+                          padding: "14px 16px",
                           border: "1px solid #d1d5db",
                           borderRadius: "8px",
                           fontSize: "16px",
                           boxSizing: "border-box",
+                          minHeight: "44px",
                         }}
                       />
                       <p
@@ -828,6 +858,7 @@ export default function EventSubmissionPage() {
                             marginBottom: "8px",
                             fontWeight: "500",
                             color: "#374151",
+                            fontSize: "clamp(14px, 4vw, 16px)",
                           }}
                         >
                           주최기관 로고
@@ -843,11 +874,12 @@ export default function EventSubmissionPage() {
                           }
                           style={{
                             width: "100%",
-                            padding: "12px 16px",
+                            padding: "14px 16px",
                             border: "1px solid #d1d5db",
                             borderRadius: "8px",
                             fontSize: "16px",
                             boxSizing: "border-box",
+                            minHeight: "44px",
                           }}
                         />
                         <p
@@ -881,10 +913,13 @@ export default function EventSubmissionPage() {
                   borderRadius: "8px",
                   background: isSubmitting ? "#9ca3af" : "var(--primary)",
                   color: "white",
-                  fontSize: "18px",
+                  fontSize: "clamp(16px, 4vw, 18px)",
                   fontWeight: "600",
                   cursor: isSubmitting ? "not-allowed" : "pointer",
                   minWidth: "200px",
+                  width: "100%",
+                  maxWidth: "400px",
+                  minHeight: "52px",
                 }}
               >
                 {isSubmitting ? "제보 중..." : "행사 제보하기"}
