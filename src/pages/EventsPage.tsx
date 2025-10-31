@@ -115,7 +115,8 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
   // 무한 스크롤을 위한 데이터 로딩
   const loadMore = useCallback(
     async (pageNum: number, reset: boolean = false, force: boolean = false) => {
-      if ((loading && !force) || loadedPages.has(pageNum)) return; // 이미 로드된 페이지는 건너뛰기
+      // force가 true일 때는 로딩/중복 체크를 우회해 강제 로드
+      if ((loading && !force) || (!force && loadedPages.has(pageNum))) return; // 이미 로드된 페이지는 건너뛰기
 
       setLoading(true);
       setError(null);
@@ -167,7 +168,8 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
+        // 현재 페이지 데이터가 로드된 이후에만 다음 페이지 로딩
+        if (entries[0].isIntersecting && hasMore && !loading && loadedPages.has(page)) {
           const nextPage = page + 1;
           setPage(nextPage);
           loadMore(nextPage, false);
@@ -181,7 +183,7 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
     }
 
     return () => observer.disconnect();
-  }, [hasMore, loading, loadMore, page]);
+  }, [hasMore, loading, loadMore, page, loadedPages]);
 
   const toggleSelect = (id: number) => {
     setSelected(prev => {

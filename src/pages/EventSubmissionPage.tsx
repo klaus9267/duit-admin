@@ -94,7 +94,7 @@ export default function EventSubmissionPage() {
     // 행사 기본 정보 검증
     if (!formData.title.trim()) newErrors.title = "행사 제목을 입력해주세요";
     if (!formData.startAt) newErrors.startAt = "행사 시작일을 선택해주세요";
-    if (!formData.endAt) newErrors.endAt = "행사 종료일을 선택해주세요";
+    // 종료일은 선택 사항 (nullable)
     if (!formData.uri.trim()) newErrors.uri = "행사 URL을 입력해주세요";
 
     // 주최기관 검증
@@ -681,7 +681,11 @@ export default function EventSubmissionPage() {
                         onChange={(e) =>
                           handleInputChange("hostMode", e.target.value)
                         }
-                        style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                        style={{
+                          width: "18px",
+                          height: "18px",
+                          cursor: "pointer",
+                        }}
                       />
                       기존 주최기관 선택
                     </label>
@@ -702,7 +706,11 @@ export default function EventSubmissionPage() {
                         onChange={(e) =>
                           handleInputChange("hostMode", e.target.value)
                         }
-                        style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                        style={{
+                          width: "18px",
+                          height: "18px",
+                          cursor: "pointer",
+                        }}
                       />
                       새 주최기관 생성
                     </label>
@@ -804,7 +812,8 @@ export default function EventSubmissionPage() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(200px, 1fr))",
                       gap: "16px",
                     }}
                   >
