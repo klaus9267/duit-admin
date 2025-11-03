@@ -11,7 +11,7 @@ import { login, logout, getStoredToken, setStoredToken, validateToken } from './
 export default function AppFrame() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [page, setPage] = useState<'events' | 'hosts'>('events');
+  const [page, setPage] = useState<'events' | 'submissions' | 'hosts'>('events');
   const [sortField, setSortField] = useState<PaginationField>(PaginationField.ID);
   const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.DESC);
   const [filterApproved, setFilterApproved] = useState<boolean>(true);
@@ -46,7 +46,7 @@ export default function AppFrame() {
   }, []);
 
   // 페이지 이동 시 토큰 검증
-  const handlePageChange = async (newPage: 'events' | 'hosts') => {
+  const handlePageChange = async (newPage: 'events' | 'submissions' | 'hosts') => {
     if (isAuthenticated) {
       // 인증된 상태에서 페이지 이동 시 토큰 재검증
       try {
@@ -128,7 +128,29 @@ export default function AppFrame() {
 
   const content = (() => {
     if (page === 'hosts') return <HostsPage />;
-    return <EventsPage sortField={sortField} sortDirection={sortDirection} filterApproved={true} includeFinished={includeFinished} onEditEvent={handleEditEvent} />;
+    if (page === 'submissions') {
+      // 제보 행사: 항상 미승인만 조회
+      return (
+        <EventsPage
+          sortField={sortField}
+          sortDirection={sortDirection}
+          filterApproved={false}
+          includeFinished={includeFinished}
+          onEditEvent={handleEditEvent}
+          approveMode={true}
+        />
+      );
+    }
+    // 행사 관리: 항상 승인만 조회
+    return (
+      <EventsPage
+        sortField={sortField}
+        sortDirection={sortDirection}
+        filterApproved={true}
+        includeFinished={includeFinished}
+        onEditEvent={handleEditEvent}
+      />
+    );
   })();
 
   return (
@@ -174,6 +196,20 @@ export default function AppFrame() {
                   행사 관리
                 </button>
                 <button
+                  onClick={() => handlePageChange('submissions')}
+                  style={{
+                    padding: '8px 16px',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    background: page === 'submissions' ? 'var(--primary)' : 'white',
+                    color: page === 'submissions' ? 'white' : 'var(--text)',
+                    cursor: 'pointer',
+                    fontWeight: '500',
+                  }}
+                >
+                  제보 행사
+                </button>
+                <button
                   onClick={() => handlePageChange('hosts')}
                   style={{
                     padding: '8px 16px',
@@ -190,7 +226,7 @@ export default function AppFrame() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              {page === 'events' && (
+              {(page === 'events' || page === 'submissions') && (
                 <>
                   <select className="select" value={sortField} onChange={e => setSortField(e.target.value as PaginationField)}>
                     <option value={PaginationField.ID}>기본</option>
@@ -204,9 +240,11 @@ export default function AppFrame() {
                     <option value="false">종료 제외</option>
                   </select>
                   <input className="input" placeholder="검색" style={{ width: 280 }} />
-                  <button className="btn primary" onClick={() => setIsCreateModalOpen(true)}>
-                    추가
-                  </button>
+                  {page === 'events' && (
+                    <button className="btn primary" onClick={() => setIsCreateModalOpen(true)}>
+                      추가
+                    </button>
+                  )}
                 </>
               )}
               <button

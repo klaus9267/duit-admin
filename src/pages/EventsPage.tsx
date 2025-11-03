@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { EventResponse, PaginationField, SortDirection, EventType } from '../api/types';
-import { getEvents, deleteEvent } from '../api/eventsClient';
+import { getEvents, deleteEvent, approveEvent } from '../api/eventsClient';
 
 // 이미지 URL을 절대 경로로 변환하는 함수
 function getImageUrl(thumbnail: string | null): string | null {
@@ -89,9 +89,10 @@ type Props = {
   filterApproved: boolean;
   includeFinished: boolean;
   onEditEvent?: (event: EventResponse) => void;
+  approveMode?: boolean; // 제보 탭에서 승인 버튼 사용
 };
 
-export default function EventsPage({ sortField, sortDirection, filterApproved, includeFinished, onEditEvent }: Props) {
+export default function EventsPage({ sortField, sortDirection, filterApproved, includeFinished, onEditEvent, approveMode }: Props) {
   const [items, setItems] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -267,7 +268,7 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
               <th style={{ width: 140 }}>종료</th>
               <th style={{ width: 80 }}>조회수</th>
               <th style={{ width: 72 }}>링크</th>
-              <th style={{ width: 60, textAlign: 'center' }}>수정</th>
+              <th style={{ width: 60, textAlign: 'center' }}>{approveMode ? '승인' : '수정'}</th>
             </tr>
           </thead>
           <tbody>
@@ -380,20 +381,46 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
                     </a>
                   </td>
                   <td style={{ textAlign: 'center' }}>
-                    <button
-                      onClick={() => onEditEvent?.(ev)}
-                      style={{
-                        padding: '4px 8px',
-                        border: '1px solid var(--primary)',
-                        borderRadius: 4,
-                        background: 'white',
-                        color: 'var(--primary)',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                      }}
-                    >
-                      수정
-                    </button>
+                    {approveMode ? (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await approveEvent(ev.id);
+                            // 승인 성공 시 목록에서 제거 (미승인 목록이므로)
+                            setItems(prev => prev.filter(item => item.id !== ev.id));
+                            alert('승인 완료');
+                          } catch (e: any) {
+                            alert(e?.message || '승인에 실패했습니다');
+                          }
+                        }}
+                        style={{
+                          padding: '4px 8px',
+                          border: '1px solid var(--primary)',
+                          borderRadius: 4,
+                          background: 'var(--primary)',
+                          color: 'white',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                        }}
+                      >
+                        승인
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => onEditEvent?.(ev)}
+                        style={{
+                          padding: '4px 8px',
+                          border: '1px solid var(--primary)',
+                          borderRadius: 4,
+                          background: 'white',
+                          color: 'var(--primary)',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                        }}
+                      >
+                        수정
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))

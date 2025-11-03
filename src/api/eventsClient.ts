@@ -241,3 +241,36 @@ export async function deleteEvent(eventId: number, token?: string): Promise<void
     throw new Error(`Failed to delete event: ${res.status} ${text}`);
   }
 }
+
+// 행사 승인
+export async function approveEvent(eventId: number, token?: string): Promise<{ id: number; message: string }> {
+  const url = `${API_BASE}/api/v1/events/${eventId}/approve`;
+
+  // 토큰 체크 및 리다이렉트
+  const authToken = token || checkAuthAndRedirect();
+
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    },
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('admin_token');
+      window.location.href = '/';
+      throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+    const text = await res.text();
+    throw new Error(`승인 실패 (${res.status}): ${text}`);
+  }
+
+  try {
+    return (await res.json()) as { id: number; message: string };
+  } catch {
+    return { id: eventId, message: 'approved' };
+  }
+}
