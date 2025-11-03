@@ -128,7 +128,7 @@ export default function AppFrame() {
 
   const content = (() => {
     if (page === 'hosts') return <HostsPage />;
-    return <EventsPage sortField={sortField} sortDirection={sortDirection} filterApproved={filterApproved} includeFinished={includeFinished} onEditEvent={handleEditEvent} />;
+    return <EventsPage sortField={sortField} sortDirection={sortDirection} filterApproved={true} includeFinished={includeFinished} onEditEvent={handleEditEvent} />;
   })();
 
   return (
@@ -198,10 +198,6 @@ export default function AppFrame() {
                     <option value={PaginationField.RECRUITMENT_DEADLINE}>모집 마감</option>
                     <option value={PaginationField.VIEW_COUNT}>조회수</option>
                     <option value={PaginationField.CREATED_AT}>등록일</option>
-                  </select>
-                  <select className="select" value={filterApproved ? 'true' : 'false'} onChange={e => setFilterApproved(e.target.value === 'true')} style={{ width: 120 }}>
-                    <option value="true">승인</option>
-                    <option value="false">미승인</option>
                   </select>
                   <select className="select" value={includeFinished ? 'true' : 'false'} onChange={e => setIncludeFinished(e.target.value === 'true')} style={{ width: 140 }}>
                     <option value="true">종료 포함</option>
