@@ -247,6 +247,18 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
         총 {totalElements}개 행사
       </div>
 
+      <div
+        style={{
+          padding: '8px 12px',
+          background: '#fff',
+          borderBottom: '1px solid var(--border)',
+          fontSize: '13px',
+          color: '#666',
+        }}
+      >
+        💡 제목을 클릭하면 행사 링크가 새 탭에서 열립니다.
+      </div>
+
       <div style={{ overflow: 'auto', flex: 1, position: 'relative' }}>
         <table className="grid-table">
           <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#f6f8fb' }}>
@@ -261,20 +273,18 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
               <th style={{ width: 360 }}>제목</th>
               <th style={{ width: 36 }}>주최ID</th>
               <th style={{ width: 120 }}>유형</th>
-              <th style={{ width: 60, textAlign: 'center' }}>승인</th>
               <th style={{ width: 140 }}>모집 시작</th>
               <th style={{ width: 140 }}>모집 종료</th>
               <th style={{ width: 140 }}>시작</th>
               <th style={{ width: 140 }}>종료</th>
               <th style={{ width: 80 }}>조회수</th>
-              <th style={{ width: 72 }}>링크</th>
               <th style={{ width: 60, textAlign: 'center' }}>{approveMode ? '승인' : '수정'}</th>
             </tr>
           </thead>
           <tbody>
             {items.length === 0 && !loading ? (
               <tr>
-                <td colSpan={13}>데이터가 없습니다</td>
+                <td colSpan={11}>데이터가 없습니다</td>
               </tr>
             ) : (
               items.map(ev => (
@@ -342,9 +352,26 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
                     )}
                   </td>
                   <td>
-                    <span className="truncate" title={ev.title}>
+                    <a
+                      href={ev.uri}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="truncate"
+                      title={ev.title}
+                      style={{
+                        color: '#000',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.textDecoration = 'underline';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.textDecoration = 'none';
+                      }}
+                    >
                       {ev.title}
-                    </span>
+                    </a>
                   </td>
                   <td>{ev.host.id}</td>
                   <td>
@@ -369,17 +396,11 @@ export default function EventsPage({ sortField, sortDirection, filterApproved, i
                       }
                     })()}
                   </td>
-                  <td style={{ width: 60, textAlign: 'center' }}>{ev.isApproved ? 'O' : 'X'}</td>
                   <td>{formatDateTime(ev.recruitmentStartAt)}</td>
                   <td>{formatDateTime(ev.recruitmentEndAt)}</td>
                   <td>{formatDateTime(ev.startAt)}</td>
                   <td>{formatDateTime(ev.endAt)}</td>
                   <td>{ev.viewCount}</td>
-                  <td>
-                    <a href={ev.uri} target="_blank" rel="noreferrer">
-                      열기
-                    </a>
-                  </td>
                   <td style={{ textAlign: 'center' }}>
                     {approveMode ? (
                       <button
