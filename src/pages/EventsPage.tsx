@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { EventResponse, PaginationField, SortDirection, EventType, EventStatus, EventStatusGroup } from '../api/types';
-import { getEvents, deleteEvent, approveEvent } from '../api/eventsClient';
+import { getEvents, deleteEvent, approveEvent, getEventsCount } from '../api/eventsClient';
 
 // 이미지 URL을 절대 경로로 변환하는 함수
 function getImageUrl(thumbnail: string | null): string | null {
@@ -101,6 +101,7 @@ export default function EventsPage({ sortField, sortDirection: _sortDirection, f
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState<number | null>(null);
   const observerRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
   const formatDateTime = (iso: string | null): string => {
@@ -187,6 +188,20 @@ export default function EventsPage({ sortField, sortDirection: _sortDirection, f
     },
     [sortField, statusGroupFilter, statusFilter, hostIdFilter]
   );
+
+  // 전체 행사 개수 조회
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const count = await getEventsCount();
+        setTotalCount(count);
+      } catch (e: any) {
+        console.error('전체 행사 개수 조회 실패:', e);
+        setTotalCount(null);
+      }
+    };
+    fetchCount();
+  }, [statusFilter, statusGroupFilter, hostIdFilter]);
 
   // 필터 변경 시 초기화
   useEffect(() => {
@@ -275,7 +290,8 @@ export default function EventsPage({ sortField, sortDirection: _sortDirection, f
           color: '#666',
         }}
       >
-        현재 {items.length}개 로드됨
+        현재 {items.length}
+        {totalCount !== null ? `/${totalCount}` : ''} 개 로드됨
       </div>
 
       <div
