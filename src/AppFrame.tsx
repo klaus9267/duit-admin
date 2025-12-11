@@ -152,14 +152,14 @@ export default function AppFrame() {
   const content = (() => {
     if (page === 'hosts') return <HostsPage />;
     if (page === 'submissions') {
-      // 제보 행사: 기본 상태 PENDING
+      // 제보 행사: 기본 상태그룹 PENDING
       return (
         <EventsPage
           sortField={sortField}
           sortDirection={sortDirection}
           filterApproved={false}
-          statusFilter={EventStatus.PENDING}
-          statusGroupFilter=""
+          statusFilter=""
+          statusGroupFilter={EventStatusGroup.PENDING}
           onEditEvent={handleEditEvent}
           approveMode={true}
         />
