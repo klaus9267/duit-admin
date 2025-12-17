@@ -95,6 +95,7 @@ export default function LoginPage({ onLogin }: Props) {
                 fontSize: "16px",
               }}
               placeholder="아이디를 입력하세요"
+              autoComplete="username"
               disabled={loading}
             />
           </div>
@@ -122,6 +123,7 @@ export default function LoginPage({ onLogin }: Props) {
                 fontSize: "16px",
               }}
               placeholder="비밀번호를 입력하세요"
+              autoComplete="current-password"
               disabled={loading}
             />
           </div>

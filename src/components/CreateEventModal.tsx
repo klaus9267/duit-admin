@@ -31,6 +31,8 @@ const EVENT_TYPE_OPTIONS = [
   { value: EventType.CONTEST, label: '공모전' },
   { value: EventType.CONTINUING_EDUCATION, label: '보수교육' },
   { value: EventType.EDUCATION, label: '교육' },
+  { value: EventType.VOLUNTEER, label: '봉사' },
+  { value: EventType.TRAINING, label: '연수' },
   { value: EventType.ETC, label: '기타' },
 ];
 

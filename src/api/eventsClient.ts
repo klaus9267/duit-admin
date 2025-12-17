@@ -1,4 +1,4 @@
-import { EventListParams, EventListResponse } from './types';
+import { CursorEventListParams, CursorEventListResponse } from './types';
 
 // 토큰이 없으면 로그인 페이지로 리다이렉트하는 함수
 function checkAuthAndRedirect() {
@@ -13,31 +13,30 @@ function checkAuthAndRedirect() {
 
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? '' : 'https://klaus9267.duckdns.org');
 
-function toQuery(params: EventListParams): string {
+function toQuery(params: CursorEventListParams): string {
   const search = new URLSearchParams();
-  if (params.page !== undefined) search.set('page', String(params.page));
+  if (params.cursor) search.set('cursor', params.cursor);
   if (params.size !== undefined) search.set('size', String(params.size));
-  if (params.sortDirection) search.set('sortDirection', params.sortDirection);
   if (params.field) search.set('field', params.field);
-  if (params.isApproved !== undefined) search.set('isApproved', String(params.isApproved));
-  if (params.includeFinished !== undefined) search.set('includeFinished', String(params.includeFinished));
-  if (params.isBookmarked !== undefined) search.set('isBookmarked', String(params.isBookmarked));
-  if (params.type && params.type.length > 0) {
-    for (const t of params.type) search.append('type', t);
+  if (params.bookmarked !== undefined) search.set('bookmarked', String(params.bookmarked));
+  if (params.types && params.types.length > 0) {
+    for (const t of params.types) search.append('types', t);
   }
+  if (params.status) search.set('status', params.status);
+  if (params.statusGroup) search.set('statusGroup', params.statusGroup);
   if (params.hostId !== undefined) search.set('hostId', String(params.hostId));
   if (params.searchKeyword) search.set('searchKeyword', params.searchKeyword);
   const s = search.toString();
   return s ? `?${s}` : '';
 }
 
-export async function getEvents(params: EventListParams, token?: string): Promise<EventListResponse> {
+export async function getEvents(params: CursorEventListParams, token?: string): Promise<CursorEventListResponse> {
   const query = toQuery(params);
-  const url = `${API_BASE}/api/v1/events${query}`;
+  const url = `${API_BASE}/api/v2/events${query}`;
 
   if (import.meta.env.DEV) {
-    console.log('[getEvents] params:', params);
-    console.log('[getEvents] url:', url);
+    console.log('[getEvents v2] params:', params);
+    console.log('[getEvents v2] url:', url);
   }
 
   // 토큰 체크 및 리다이렉트
@@ -60,7 +59,33 @@ export async function getEvents(params: EventListParams, token?: string): Promis
     const text = await res.text();
     throw new Error(`Failed to fetch events: ${res.status} ${text}`);
   }
-  return (await res.json()) as EventListResponse;
+  return (await res.json()) as CursorEventListResponse;
+}
+
+export async function getEventsCount(token?: string): Promise<number> {
+  const url = `${API_BASE}/api/v2/events/count`;
+
+  // 토큰 체크 및 리다이렉트
+  const authToken = token || checkAuthAndRedirect();
+
+  const res = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    },
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    if (res.status === 401) {
+      // 인증 실패 시 로그인 페이지로 리다이렉트
+      localStorage.removeItem('admin_token');
+      window.location.href = '/';
+      throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+    const text = await res.text();
+    throw new Error(`Failed to fetch events count: ${res.status} ${text}`);
+  }
+  return (await res.json()) as number;
 }
 
 export async function createEvent(formData: FormData, token?: string): Promise<{ id: number; message: string }> {
@@ -239,6 +264,39 @@ export async function deleteEvent(eventId: number, token?: string): Promise<void
     }
     const text = await res.text();
     throw new Error(`Failed to delete event: ${res.status} ${text}`);
+  }
+}
+
+// 행사 승인
+export async function approveEvent(eventId: number, token?: string): Promise<{ id: number; message: string }> {
+  const url = `${API_BASE}/api/v1/events/${eventId}/approve`;
+
+  // 토큰 체크 및 리다이렉트
+  const authToken = token || checkAuthAndRedirect();
+
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    },
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('admin_token');
+      window.location.href = '/';
+      throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+    const text = await res.text();
+    throw new Error(`승인 실패 (${res.status}): ${text}`);
+  }
+
+  try {
+    return (await res.json()) as { id: number; message: string };
+  } catch {
+    return { id: eventId, message: 'approved' };
   }
 }
 

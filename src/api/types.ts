@@ -8,6 +8,8 @@ export enum EventType {
   CONTEST = "CONTEST",
   CONTINUING_EDUCATION = "CONTINUING_EDUCATION",
   EDUCATION = "EDUCATION",
+  VOLUNTEER = "VOLUNTEER",
+  TRAINING = "TRAINING",
   ETC = "ETC",
 }
 
@@ -19,6 +21,8 @@ export const EVENT_TYPE_LABEL: Record<EventType, string> = {
   [EventType.CONTEST]: "공모전",
   [EventType.CONTINUING_EDUCATION]: "보수교육",
   [EventType.EDUCATION]: "교육",
+  [EventType.VOLUNTEER]: "봉사",
+  [EventType.TRAINING]: "연수",
   [EventType.ETC]: "기타",
 };
 
@@ -36,6 +40,22 @@ export enum SortDirection {
   DESC = "DESC",
 }
 
+// V2 이벤트 상태
+export enum EventStatus {
+  FINISHED = "FINISHED",
+  ACTIVE = "ACTIVE",
+  EVENT_WAITING = "EVENT_WAITING",
+  RECRUITING = "RECRUITING",
+  RECRUITMENT_WAITING = "RECRUITMENT_WAITING",
+  PENDING = "PENDING",
+}
+
+export enum EventStatusGroup {
+  PENDING = "PENDING",
+  ACTIVE = "ACTIVE",
+  FINISHED = "FINISHED",
+}
+
 export interface HostResponse {
   id: number;
   name: string;
@@ -51,8 +71,10 @@ export interface EventResponse {
   recruitmentEndAt: string | null;
   uri: string;
   thumbnail: string | null;
-  isApproved: boolean;
   eventType: EventType;
+  eventStatus?: EventStatus;
+  eventStatusGroup?: EventStatusGroup;
+  isApproved?: boolean;
   host: HostResponse;
   viewCount: number;
   isBookmarked: boolean;
@@ -70,6 +92,18 @@ export interface EventListResponse {
   pageInfo: PageInfo;
 }
 
+// V2 커서 기반 페이지 정보
+export interface CursorPageInfo {
+  hasNext: boolean;
+  nextCursor: string | null;
+  pageSize: number;
+}
+
+export interface CursorEventListResponse {
+  content: EventResponse[];
+  pageInfo: CursorPageInfo;
+}
+
 export interface EventListParams {
   page?: number;
   size?: number;
@@ -81,6 +115,19 @@ export interface EventListParams {
   type?: EventType[];
   hostId?: number;
   searchKeyword?: string;
+}
+
+// V2 커서 기반 파라미터
+export interface CursorEventListParams {
+  cursor?: string | null;
+  size?: number;
+  field?: PaginationField;
+  types?: EventType[];
+  status?: EventStatus;
+  statusGroup?: EventStatusGroup;
+  bookmarked?: boolean;
+  searchKeyword?: string;
+  hostId?: number;
 }
 
 export interface HostListResponse {

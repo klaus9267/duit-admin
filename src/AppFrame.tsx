@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PaginationField, SortDirection, EventResponse } from './api/types';
+import { PaginationField, SortDirection, EventResponse, EventStatus, EventStatusGroup, HostResponse } from './api/types';
 import EventsPage from './pages/EventsPage';
 import HostsPage from './pages/HostsPage';
 import CreateEventModal from './components/CreateEventModal';
@@ -7,15 +7,19 @@ import UpdateEventModal from './components/UpdateEventModal';
 import LoginPage from './components/LoginPage';
 import { createEvent, updateEvent } from './api/eventsClient';
 import { login, logout, getStoredToken, setStoredToken, validateToken } from './api/authClient';
+import { getAllHosts } from './api/hostsClient';
 
 export default function AppFrame() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [page, setPage] = useState<'events' | 'hosts'>('events');
+  const [page, setPage] = useState<'events' | 'submissions' | 'hosts'>('events');
   const [sortField, setSortField] = useState<PaginationField>(PaginationField.ID);
   const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.DESC);
   const [filterApproved, setFilterApproved] = useState<boolean>(true);
-  const [includeFinished, setIncludeFinished] = useState<boolean>(true);
+  const [statusFilter, setStatusFilter] = useState<EventStatus | ''>('');
+  const [statusGroupFilter, setStatusGroupFilter] = useState<EventStatusGroup | ''>(EventStatusGroup.ACTIVE);
+  const [hostIdFilter, setHostIdFilter] = useState<number | ''>('');
+  const [hosts, setHosts] = useState<HostResponse[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<EventResponse | null>(null);
@@ -34,6 +38,15 @@ export default function AppFrame() {
       try {
         const isValid = await validateToken();
         setIsAuthenticated(isValid);
+        if (isValid) {
+          // 인증 성공 시 주최 기관 목록 로드
+          try {
+            const hostList = await getAllHosts();
+            setHosts(hostList);
+          } catch (error) {
+            console.error('주최 기관 목록 로드 실패:', error);
+          }
+        }
       } catch (error) {
         console.error('토큰 검증 중 오류:', error);
         setIsAuthenticated(false);
@@ -46,7 +59,7 @@ export default function AppFrame() {
   }, []);
 
   // 페이지 이동 시 토큰 검증
-  const handlePageChange = async (newPage: 'events' | 'hosts') => {
+  const handlePageChange = async (newPage: 'events' | 'submissions' | 'hosts') => {
     if (isAuthenticated) {
       // 인증된 상태에서 페이지 이동 시 토큰 재검증
       try {
@@ -62,6 +75,16 @@ export default function AppFrame() {
       }
     }
     setPage(newPage);
+    // 탭 변경 시 상태 필터 초기화
+    if (newPage === 'events') {
+      setStatusGroupFilter(EventStatusGroup.ACTIVE);
+      setStatusFilter('');
+      setFilterApproved(true);
+    } else if (newPage === 'submissions') {
+      setStatusFilter(EventStatus.PENDING);
+      setStatusGroupFilter('');
+      setFilterApproved(false);
+    }
   };
 
   // 로그인 처리
@@ -128,7 +151,32 @@ export default function AppFrame() {
 
   const content = (() => {
     if (page === 'hosts') return <HostsPage />;
-    return <EventsPage sortField={sortField} sortDirection={sortDirection} filterApproved={filterApproved} includeFinished={includeFinished} onEditEvent={handleEditEvent} />;
+    if (page === 'submissions') {
+      // 제보 행사: 기본 상태그룹 PENDING
+      return (
+        <EventsPage
+          sortField={sortField}
+          sortDirection={sortDirection}
+          filterApproved={false}
+          statusFilter=""
+          statusGroupFilter={EventStatusGroup.PENDING}
+          onEditEvent={handleEditEvent}
+          approveMode={true}
+        />
+      );
+    }
+    // 행사 관리
+    return (
+      <EventsPage
+        sortField={sortField}
+        sortDirection={sortDirection}
+        filterApproved={true}
+        statusFilter={statusFilter}
+        statusGroupFilter={statusGroupFilter}
+        hostIdFilter={hostIdFilter}
+        onEditEvent={handleEditEvent}
+      />
+    );
   })();
 
   return (
@@ -174,6 +222,20 @@ export default function AppFrame() {
                   행사 관리
                 </button>
                 <button
+                  onClick={() => handlePageChange('submissions')}
+                  style={{
+                    padding: '8px 16px',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    background: page === 'submissions' ? 'var(--primary)' : 'white',
+                    color: page === 'submissions' ? 'white' : 'var(--text)',
+                    cursor: 'pointer',
+                    fontWeight: '500',
+                  }}
+                >
+                  제보 행사
+                </button>
+                <button
                   onClick={() => handlePageChange('hosts')}
                   style={{
                     padding: '8px 16px',
@@ -190,7 +252,7 @@ export default function AppFrame() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              {page === 'events' && (
+              {(page === 'events' || page === 'submissions') && (
                 <>
                   <select className="select" value={sortField} onChange={e => setSortField(e.target.value as PaginationField)}>
                     <option value={PaginationField.ID}>기본</option>
@@ -199,18 +261,64 @@ export default function AppFrame() {
                     <option value={PaginationField.VIEW_COUNT}>조회수</option>
                     <option value={PaginationField.CREATED_AT}>등록일</option>
                   </select>
-                  <select className="select" value={filterApproved ? 'true' : 'false'} onChange={e => setFilterApproved(e.target.value === 'true')} style={{ width: 120 }}>
-                    <option value="true">승인</option>
-                    <option value="false">미승인</option>
+                  <select
+                    className="select"
+                    value={statusFilter || ''}
+                    onChange={e => {
+                      const value = e.target.value as EventStatus | '';
+                      setStatusFilter(value);
+                      if (value) setStatusGroupFilter('');
+                    }}
+                    style={{ width: 140 }}
+                    disabled={page === 'submissions'}
+                  >
+                    <option value="">상태 전체</option>
+                    <option value={EventStatus.PENDING}>승인 대기</option>
+                    <option value={EventStatus.RECRUITING}>모집중</option>
+                    <option value={EventStatus.RECRUITMENT_WAITING}>모집 대기</option>
+                    <option value={EventStatus.EVENT_WAITING}>행사 대기</option>
+                    <option value={EventStatus.ACTIVE}>진행중</option>
+                    <option value={EventStatus.FINISHED}>종료</option>
                   </select>
-                  <select className="select" value={includeFinished ? 'true' : 'false'} onChange={e => setIncludeFinished(e.target.value === 'true')} style={{ width: 140 }}>
-                    <option value="true">종료 포함</option>
-                    <option value="false">종료 제외</option>
+                  <select
+                    className="select"
+                    value={statusGroupFilter || ''}
+                    onChange={e => {
+                      const value = e.target.value as EventStatusGroup | '';
+                      setStatusGroupFilter(value);
+                      if (value) setStatusFilter('');
+                    }}
+                    style={{ width: 140 }}
+                    disabled={page === 'submissions'}
+                  >
+                    <option value="">상태그룹 전체</option>
+                    <option value={EventStatusGroup.PENDING}>승인대기</option>
+                    <option value={EventStatusGroup.ACTIVE}>진행</option>
+                    <option value={EventStatusGroup.FINISHED}>종료</option>
                   </select>
-                  <input className="input" placeholder="검색" style={{ width: 280 }} />
-                  <button className="btn primary" onClick={() => setIsCreateModalOpen(true)}>
-                    추가
-                  </button>
+                  <select
+                    className="select"
+                    value={hostIdFilter || ''}
+                    onChange={e => {
+                      const value = e.target.value === '' ? '' : Number(e.target.value);
+                      setHostIdFilter(value);
+                    }}
+                    style={{ width: 180 }}
+                    disabled={page === 'submissions'}
+                  >
+                    <option value="">주최 기관 전체</option>
+                    {hosts.map(host => (
+                      <option key={host.id} value={host.id}>
+                        {host.name}
+                      </option>
+                    ))}
+                  </select>
+                  <input className="input" placeholder="검색" style={{ width: 180 }} />
+                  {page === 'events' && (
+                    <button className="btn primary" onClick={() => setIsCreateModalOpen(true)}>
+                      추가
+                    </button>
+                  )}
                 </>
               )}
               <button

@@ -1,15 +1,15 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import './index.css';
-import AppFrame from './AppFrame';
-import EventSubmissionPage from './pages/EventSubmissionPage';
+import React from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import AppFrame from "./AppFrame";
+import EventSubmissionPage from "./pages/EventSubmissionPage";
 
 // 라우팅 분기 로직
 const App = () => {
   const path = window.location.pathname;
 
-  // 사용자 제보 페이지
-  if (path === '/submit') {
+  // 사용자 제보 페이지 (별칭 지원: /submit, /sub)
+  if (path === "/submit" || path === "/sub") {
     return <EventSubmissionPage />;
   }
 
@@ -17,4 +17,4 @@ const App = () => {
   return <AppFrame />;
 };
 
-createRoot(document.getElementById('root')!).render(<App />);
+createRoot(document.getElementById("root")!).render(<App />);

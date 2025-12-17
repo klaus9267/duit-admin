@@ -456,6 +456,8 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
                 <option value={EventType.CONTEST}>공모전</option>
                 <option value={EventType.CONTINUING_EDUCATION}>보수교육</option>
                 <option value={EventType.EDUCATION}>교육</option>
+                <option value={EventType.VOLUNTEER}>봉사</option>
+                <option value={EventType.TRAINING}>연수</option>
                 <option value={EventType.ETC}>기타</option>
               </select>
             </div>
