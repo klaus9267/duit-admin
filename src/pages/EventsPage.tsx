@@ -89,12 +89,23 @@ type Props = {
   filterApproved: boolean;
   statusFilter: EventStatus | '';
   statusGroupFilter: EventStatusGroup | '';
+  eventTypeFilter?: EventType | '';
   hostIdFilter?: number | '';
   onEditEvent?: (event: EventResponse) => void;
   approveMode?: boolean; // 제보 탭에서 승인 버튼 사용
 };
 
-export default function EventsPage({ sortField, sortDirection: _sortDirection, filterApproved, statusFilter, statusGroupFilter, hostIdFilter, onEditEvent, approveMode }: Props) {
+export default function EventsPage({
+  sortField,
+  sortDirection: _sortDirection,
+  filterApproved,
+  statusFilter,
+  statusGroupFilter,
+  eventTypeFilter,
+  hostIdFilter,
+  onEditEvent,
+  approveMode,
+}: Props) {
   const [items, setItems] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -163,6 +174,7 @@ export default function EventsPage({ sortField, sortDirection: _sortDirection, f
           statusGroup: statusGroupFilter || undefined,
           status: statusFilter || undefined,
           hostId: hostIdFilter || undefined,
+          types: eventTypeFilter ? [eventTypeFilter] : undefined,
         });
 
         if (reset) {
@@ -186,7 +198,7 @@ export default function EventsPage({ sortField, sortDirection: _sortDirection, f
         setLoading(false);
       }
     },
-    [sortField, statusGroupFilter, statusFilter, hostIdFilter]
+    [sortField, statusGroupFilter, statusFilter, eventTypeFilter, hostIdFilter]
   );
 
   // 전체 행사 개수 조회
@@ -201,7 +213,7 @@ export default function EventsPage({ sortField, sortDirection: _sortDirection, f
       }
     };
     fetchCount();
-  }, [statusFilter, statusGroupFilter, hostIdFilter]);
+  }, [statusFilter, statusGroupFilter, eventTypeFilter, hostIdFilter]);
 
   // 필터 변경 시 초기화
   useEffect(() => {
@@ -210,7 +222,7 @@ export default function EventsPage({ sortField, sortDirection: _sortDirection, f
     setNextCursor(null);
     // 초기 로드
     loadMore(null, true);
-  }, [sortField, _sortDirection, filterApproved, statusFilter, statusGroupFilter, hostIdFilter, loadMore]);
+  }, [sortField, _sortDirection, filterApproved, statusFilter, statusGroupFilter, eventTypeFilter, hostIdFilter, loadMore]);
 
   // 무한 스크롤 옵저버
   useEffect(() => {

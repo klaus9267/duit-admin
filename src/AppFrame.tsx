@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PaginationField, SortDirection, EventResponse, EventStatus, EventStatusGroup, HostResponse } from './api/types';
+import { PaginationField, SortDirection, EventResponse, EventStatus, EventStatusGroup, HostResponse, EventType, EVENT_TYPE_LABEL } from './api/types';
 import EventsPage from './pages/EventsPage';
 import HostsPage from './pages/HostsPage';
 import CreateEventModal from './components/CreateEventModal';
@@ -19,6 +19,7 @@ export default function AppFrame() {
   const [statusFilter, setStatusFilter] = useState<EventStatus | ''>('');
   const [statusGroupFilter, setStatusGroupFilter] = useState<EventStatusGroup | ''>(EventStatusGroup.ACTIVE);
   const [hostIdFilter, setHostIdFilter] = useState<number | ''>('');
+  const [eventTypeFilter, setEventTypeFilter] = useState<EventType | ''>('');
   const [hosts, setHosts] = useState<HostResponse[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
@@ -98,10 +99,12 @@ export default function AppFrame() {
       setStatusGroupFilter(EventStatusGroup.ACTIVE);
       setStatusFilter('');
       setFilterApproved(true);
+      setEventTypeFilter('');
     } else if (newPage === 'submissions') {
       setStatusFilter(EventStatus.PENDING);
       setStatusGroupFilter('');
       setFilterApproved(false);
+      setEventTypeFilter('');
     }
   };
 
@@ -178,6 +181,7 @@ export default function AppFrame() {
           filterApproved={false}
           statusFilter=""
           statusGroupFilter={EventStatusGroup.PENDING}
+          eventTypeFilter={eventTypeFilter}
           onEditEvent={handleEditEvent}
           approveMode={true}
         />
@@ -191,6 +195,7 @@ export default function AppFrame() {
         filterApproved={true}
         statusFilter={statusFilter}
         statusGroupFilter={statusGroupFilter}
+        eventTypeFilter={eventTypeFilter}
         hostIdFilter={hostIdFilter}
         onEditEvent={handleEditEvent}
       />
@@ -236,6 +241,22 @@ export default function AppFrame() {
                     <option value={PaginationField.RECRUITMENT_DEADLINE}>모집 마감</option>
                     <option value={PaginationField.VIEW_COUNT}>조회수</option>
                     <option value={PaginationField.CREATED_AT}>등록일</option>
+                  </select>
+                  <select
+                    className="select"
+                    value={eventTypeFilter || ''}
+                    onChange={e => {
+                      const value = e.target.value as EventType | '';
+                      setEventTypeFilter(value);
+                    }}
+                    style={{ width: 160 }}
+                  >
+                    <option value="">유형 전체</option>
+                    {Object.values(EventType).map(type => (
+                      <option key={type} value={type}>
+                        {EVENT_TYPE_LABEL[type]}
+                      </option>
+                    ))}
                   </select>
                   <select
                     className="select"
@@ -359,6 +380,22 @@ export default function AppFrame() {
                   <option value={PaginationField.RECRUITMENT_DEADLINE}>모집 마감</option>
                   <option value={PaginationField.VIEW_COUNT}>조회수</option>
                   <option value={PaginationField.CREATED_AT}>등록일</option>
+                </select>
+
+                <select
+                  className="select"
+                  value={eventTypeFilter || ''}
+                  onChange={e => {
+                    const value = e.target.value as EventType | '';
+                    setEventTypeFilter(value);
+                  }}
+                >
+                  <option value="">유형 전체</option>
+                  {Object.values(EventType).map(type => (
+                    <option key={type} value={type}>
+                      {EVENT_TYPE_LABEL[type]}
+                    </option>
+                  ))}
                 </select>
 
                 <select
