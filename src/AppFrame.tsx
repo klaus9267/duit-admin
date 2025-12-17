@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PaginationField, SortDirection, EventResponse, EventStatus, EventStatusGroup, HostResponse, EventType, EVENT_TYPE_LABEL } from './api/types';
 import EventsPage from './pages/EventsPage';
 import HostsPage from './pages/HostsPage';
+import UsersPage from './pages/UsersPage';
 import CreateEventModal from './components/CreateEventModal';
 import UpdateEventModal from './components/UpdateEventModal';
 import LoginPage from './components/LoginPage';
@@ -12,7 +13,7 @@ import { getAllHosts } from './api/hostsClient';
 export default function AppFrame() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [page, setPage] = useState<'events' | 'submissions' | 'hosts'>('events');
+  const [page, setPage] = useState<'events' | 'submissions' | 'hosts' | 'users'>('events');
   const [sortField, setSortField] = useState<PaginationField>(PaginationField.ID);
   const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.DESC);
   const [filterApproved, setFilterApproved] = useState<boolean>(true);
@@ -78,7 +79,7 @@ export default function AppFrame() {
   }, []);
 
   // 페이지 이동 시 토큰 검증
-  const handlePageChange = async (newPage: 'events' | 'submissions' | 'hosts') => {
+  const handlePageChange = async (newPage: 'events' | 'submissions' | 'hosts' | 'users') => {
     if (isAuthenticated) {
       // 인증된 상태에서 페이지 이동 시 토큰 재검증
       try {
@@ -172,6 +173,7 @@ export default function AppFrame() {
 
   const content = (() => {
     if (page === 'hosts') return <HostsPage />;
+    if (page === 'users') return <UsersPage />;
     if (page === 'submissions') {
       // 제보 행사: 기본 상태그룹 PENDING
       return (
@@ -228,6 +230,12 @@ export default function AppFrame() {
                   className={`app-nav-item ${page === 'hosts' ? 'active' : ''}`}
                 >
                   주최기관
+                </button>
+                <button
+                  onClick={() => handlePageChange('users')}
+                  className={`app-nav-item ${page === 'users' ? 'active' : ''}`}
+                >
+                  사용자
                 </button>
               </div>
             </div>
@@ -370,6 +378,15 @@ export default function AppFrame() {
               }}
             >
               주최기관
+            </button>
+            <button
+              className={`app-nav-mobile-item ${page === 'users' ? 'active' : ''}`}
+              onClick={() => {
+                handlePageChange('users');
+                setIsMobileMenuOpen(false);
+              }}
+            >
+              사용자
             </button>
 
             {(page === 'events' || page === 'submissions') && (

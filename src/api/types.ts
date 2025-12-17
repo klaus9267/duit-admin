@@ -141,3 +141,32 @@ export interface HostListParams {
   sortDirection?: SortDirection;
   field: PaginationField; // e.g., NAME
 }
+
+// 사용자
+export interface AlarmSettings {
+  push: boolean;
+  bookmark: boolean;
+  calendar: boolean;
+  marketing: boolean;
+}
+
+export interface UserResponse {
+  id: number;
+  email: string;
+  nickname: string;
+  providerId: string;
+  autoAddBookmarkToCalendar: boolean;
+  alarmSettings: AlarmSettings;
+}
+
+export interface UserListResponse {
+  content: UserResponse[];
+  pageInfo: PageInfo;
+}
+
+export interface UserListParams {
+  page?: number;
+  size?: number;
+  sortDirection?: SortDirection;
+  field?: PaginationField;
+}

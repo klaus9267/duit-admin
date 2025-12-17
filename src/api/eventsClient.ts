@@ -1,7 +1,7 @@
 import { CursorEventListParams, CursorEventListResponse } from './types';
 
 // 토큰이 없으면 로그인 페이지로 리다이렉트하는 함수
-function checkAuthAndRedirect() {
+export function checkAuthAndRedirect() {
   const token = localStorage.getItem('admin_token');
   if (!token) {
     // 토큰이 없으면 로그인 페이지로 리다이렉트
