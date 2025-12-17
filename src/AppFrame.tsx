@@ -23,6 +23,8 @@ export default function AppFrame() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<EventResponse | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   // 로그인 상태 확인 및 토큰 검증
   useEffect(() => {
@@ -56,6 +58,22 @@ export default function AppFrame() {
     };
 
     checkAuth();
+  }, []);
+
+  // 뷰포트 크기에 따라 모바일 여부 감지
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        // 데스크톱에서는 항상 메뉴 닫기
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // 페이지 이동 시 토큰 검증
@@ -181,78 +199,36 @@ export default function AppFrame() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-      <section
-        style={{
-          flex: 1,
-          minWidth: 0,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <header
-          style={{
-            padding: '8px 12px',
-            borderBottom: '1px solid var(--border)',
-            background: 'var(--bg)',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              gap: 8,
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-              <div style={{ fontWeight: 700, fontSize: '18px' }}>Du it! Admin</div>
-              <div style={{ display: 'flex', gap: 8 }}>
+      <section className="app-shell">
+        <header className="app-header">
+          <div className="app-header-inner">
+            <div className="app-header-left">
+              <div className="app-logo">Du it! Admin</div>
+              {/* 데스크톱용 탭 네비게이션 */}
+              <div className="app-nav-desktop">
                 <button
                   onClick={() => handlePageChange('events')}
-                  style={{
-                    padding: '8px 16px',
-                    border: '1px solid var(--border)',
-                    borderRadius: '6px',
-                    background: page === 'events' ? 'var(--primary)' : 'white',
-                    color: page === 'events' ? 'white' : 'var(--text)',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                  }}
+                  className={`app-nav-item ${page === 'events' ? 'active' : ''}`}
                 >
                   행사 관리
                 </button>
                 <button
                   onClick={() => handlePageChange('submissions')}
-                  style={{
-                    padding: '8px 16px',
-                    border: '1px solid var(--border)',
-                    borderRadius: '6px',
-                    background: page === 'submissions' ? 'var(--primary)' : 'white',
-                    color: page === 'submissions' ? 'white' : 'var(--text)',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                  }}
+                  className={`app-nav-item ${page === 'submissions' ? 'active' : ''}`}
                 >
                   제보 행사
                 </button>
                 <button
                   onClick={() => handlePageChange('hosts')}
-                  style={{
-                    padding: '8px 16px',
-                    border: '1px solid var(--border)',
-                    borderRadius: '6px',
-                    background: page === 'hosts' ? 'var(--primary)' : 'white',
-                    color: page === 'hosts' ? 'white' : 'var(--text)',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                  }}
+                  className={`app-nav-item ${page === 'hosts' ? 'active' : ''}`}
                 >
                   주최기관
                 </button>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              {(page === 'events' || page === 'submissions') && (
+
+            <div className="app-header-right">
+              {(page === 'events' || page === 'submissions') && !isMobile && (
                 <>
                   <select className="select" value={sortField} onChange={e => setSortField(e.target.value as PaginationField)}>
                     <option value={PaginationField.ID}>기본</option>
@@ -321,20 +297,127 @@ export default function AppFrame() {
                   )}
                 </>
               )}
-              <button
-                className="btn"
-                onClick={handleLogout}
-                style={{
-                  background: '#dc2626',
-                  borderColor: '#dc2626',
-                  color: 'white',
-                }}
-              >
+              {page === 'events' && (
+                <button className="btn primary" onClick={() => setIsCreateModalOpen(true)}>
+                  추가
+                </button>
+              )}
+              <button className="btn primary delete" onClick={handleLogout} style={{ whiteSpace: 'nowrap' }}>
                 로그아웃
               </button>
             </div>
+
+            {/* 모바일 햄버거 버튼 */}
+            {isMobile && (
+              <button
+                type="button"
+                className="app-nav-toggle"
+                onClick={() => setIsMobileMenuOpen(open => !open)}
+                aria-label="메뉴 열기"
+              >
+                <span className="app-nav-toggle-label">메뉴</span>
+              </button>
+            )}
           </div>
         </header>
+        {/* 모바일용 펼쳐지는 탭 메뉴 */}
+        {isMobile && isMobileMenuOpen && (
+          <nav className="app-nav-mobile">
+            <button
+              className={`app-nav-mobile-item ${page === 'events' ? 'active' : ''}`}
+              onClick={() => {
+                handlePageChange('events');
+                setIsMobileMenuOpen(false);
+              }}
+            >
+              행사 관리
+            </button>
+            <button
+              className={`app-nav-mobile-item ${page === 'submissions' ? 'active' : ''}`}
+              onClick={() => {
+                handlePageChange('submissions');
+                setIsMobileMenuOpen(false);
+              }}
+            >
+              제보 행사
+            </button>
+            <button
+              className={`app-nav-mobile-item ${page === 'hosts' ? 'active' : ''}`}
+              onClick={() => {
+                handlePageChange('hosts');
+                setIsMobileMenuOpen(false);
+              }}
+            >
+              주최기관
+            </button>
+
+            {(page === 'events' || page === 'submissions') && (
+              <div className="app-nav-mobile-filters">
+                <select className="select" value={sortField} onChange={e => setSortField(e.target.value as PaginationField)}>
+                  <option value={PaginationField.ID}>기본</option>
+                  <option value={PaginationField.START_DATE}>시작일</option>
+                  <option value={PaginationField.RECRUITMENT_DEADLINE}>모집 마감</option>
+                  <option value={PaginationField.VIEW_COUNT}>조회수</option>
+                  <option value={PaginationField.CREATED_AT}>등록일</option>
+                </select>
+
+                <select
+                  className="select"
+                  value={statusFilter || ''}
+                  onChange={e => {
+                    const value = e.target.value as EventStatus | '';
+                    setStatusFilter(value);
+                    if (value) setStatusGroupFilter('');
+                  }}
+                  disabled={page === 'submissions'}
+                >
+                  <option value="">상태 전체</option>
+                  <option value={EventStatus.PENDING}>승인 대기</option>
+                  <option value={EventStatus.RECRUITING}>모집중</option>
+                  <option value={EventStatus.RECRUITMENT_WAITING}>모집 대기</option>
+                  <option value={EventStatus.EVENT_WAITING}>행사 대기</option>
+                  <option value={EventStatus.ACTIVE}>진행중</option>
+                  <option value={EventStatus.FINISHED}>종료</option>
+                </select>
+
+                <select
+                  className="select"
+                  value={statusGroupFilter || ''}
+                  onChange={e => {
+                    const value = e.target.value as EventStatusGroup | '';
+                    setStatusGroupFilter(value);
+                    if (value) setStatusFilter('');
+                  }}
+                  disabled={page === 'submissions'}
+                >
+                  <option value="">상태그룹 전체</option>
+                  <option value={EventStatusGroup.PENDING}>승인대기</option>
+                  <option value={EventStatusGroup.ACTIVE}>진행</option>
+                  <option value={EventStatusGroup.FINISHED}>종료</option>
+                </select>
+
+                <select
+                  className="select"
+                  value={hostIdFilter || ''}
+                  onChange={e => {
+                    const value = e.target.value === '' ? '' : Number(e.target.value);
+                    setHostIdFilter(value);
+                  }}
+                  disabled={page === 'submissions'}
+                >
+                  <option value="">주최 기관 전체</option>
+                  {hosts.map(host => (
+                    <option key={host.id} value={host.id}>
+                      {host.name}
+                    </option>
+                  ))}
+                </select>
+
+                <input className="input" placeholder="검색" />
+              </div>
+            )}
+          </nav>
+        )}
         <div
           style={{
             flex: 1,
