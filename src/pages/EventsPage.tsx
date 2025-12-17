@@ -438,6 +438,11 @@ export default function EventsPage({ sortField, sortDirection: _sortDirection, f
                           return '보수교육';
                         case EventType.EDUCATION:
                           return '교육';
+                        case EventType.VOLUNTEER:
+                          return '봉사';
+                        case EventType.TRAINING:
+                          return '연수';
+                        case EventType.ETC:
                         default:
                           return '기타';
                       }

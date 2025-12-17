@@ -15,6 +15,8 @@ interface EventFormData {
   hostName: string; // 새 주최기관 생성 시
   eventThumbnail: File | null;
   hostThumbnail: File | null;
+   deleteEventThumbnail: boolean;
+   deleteHostThumbnail: boolean;
 }
 
 interface UpdateEventModalProps {
@@ -38,6 +40,8 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
     hostName: '',
     eventThumbnail: null,
     hostThumbnail: null,
+    deleteEventThumbnail: false,
+    deleteHostThumbnail: false,
   });
 
   const [hosts, setHosts] = useState<HostResponse[]>([]);
@@ -79,15 +83,35 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
         hostName: '',
         eventThumbnail: null, // 새로 업로드할 파일
         hostThumbnail: null, // 새로 업로드할 파일
+        deleteEventThumbnail: false,
+        deleteHostThumbnail: false,
       });
     }
   }, [eventData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target as HTMLInputElement | HTMLSelectElement;
+
+    // 체크박스는 boolean으로 처리
+    if (type === 'checkbox') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: checked,
+      }));
+      return;
+    }
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'hostId' ? Number(value) : name === 'hostMode' ? (value as 'select' | 'create') : value === '' ? null : value,
+      [name]:
+        name === 'hostId'
+          ? Number(value)
+          : name === 'hostMode'
+          ? (value as 'select' | 'create')
+          : name === 'eventType'
+          ? (value as EventType)
+          : value === ''
+          ? null
+          : value,
     }));
   };
 
@@ -96,6 +120,9 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
     setFormData(prev => ({
       ...prev,
       [name]: files?.[0] || null,
+      // 새로운 파일을 선택하면 삭제 플래그는 자동으로 해제
+      ...(name === 'eventThumbnail' ? { deleteEventThumbnail: false } : {}),
+      ...(name === 'hostThumbnail' ? { deleteHostThumbnail: false } : {}),
     }));
   };
 
@@ -171,6 +198,8 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
       uri: formData.uri,
       eventType: formData.eventType,
       ...(formData.hostMode === 'select' ? { hostId: formData.hostId } : { hostName: formData.hostName }),
+      deleteEventThumbnail: formData.deleteEventThumbnail,
+      deleteHostThumbnail: formData.deleteHostThumbnail,
     };
 
     submitData.append('data', JSON.stringify(eventUpdateData));
@@ -190,32 +219,8 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
   if (!isOpen || !eventData) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          background: 'white',
-          borderRadius: 8,
-          padding: '24px 32px',
-          width: '90vw',
-          maxWidth: '900px',
-          maxHeight: '85vh',
-          overflow: 'auto',
-          margin: '20px',
-        }}
-      >
+    <div className="modal-backdrop">
+      <div className="modal-panel">
         <div
           style={{
             display: 'flex',
@@ -240,14 +245,7 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 16,
-              marginBottom: 20,
-            }}
-          >
+          <div className="modal-grid-2" style={{ marginBottom: 20 }}>
             {/* 행사 제목 */}
             <div style={{ gridColumn: '1 / -1' }}>
               <label
@@ -559,6 +557,15 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
                 }}
               />
               {eventData.thumbnail && <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>현재 썸네일: {eventData.thumbnail.split('/').pop()}</div>}
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: 13 }}>
+                <input
+                  type="checkbox"
+                  name="deleteEventThumbnail"
+                  checked={formData.deleteEventThumbnail}
+                  onChange={handleInputChange}
+                />
+                행사 썸네일 삭제
+              </label>
             </div>
 
             {/* 새 주최기관 생성 시에만 주최기관 로고 업로드 표시 */}
@@ -590,6 +597,15 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
                   }}
                 />
                 {eventData.host.thumbnail && <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>현재 로고: {eventData.host.thumbnail.split('/').pop()}</div>}
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: 13 }}>
+                  <input
+                    type="checkbox"
+                    name="deleteHostThumbnail"
+                    checked={formData.deleteHostThumbnail}
+                    onChange={handleInputChange}
+                  />
+                  주최 기관 로고 삭제
+                </label>
               </div>
             )}
           </div>

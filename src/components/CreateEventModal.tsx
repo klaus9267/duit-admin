@@ -184,33 +184,8 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
   if (!isOpen) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '24px 32px',
-          width: '90vw',
-          maxWidth: '900px',
-          maxHeight: '85vh',
-          overflow: 'auto',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-          margin: '20px',
-        }}
-      >
+    <div className="modal-backdrop">
+      <div className="modal-panel">
         <div
           style={{
             display: 'flex',
@@ -262,13 +237,7 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
             </div>
 
             {/* 행사 시작일/종료일 */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '20px',
-              }}
-            >
+            <div className="modal-grid-2" style={{ gap: '20px' }}>
               <div style={{ minWidth: '0' }}>
                 <label
                   style={{
@@ -342,13 +311,7 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
             </div>
 
             {/* 모집 시작일/종료일 */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '20px',
-              }}
-            >
+            <div className="modal-grid-2" style={{ gap: '20px' }}>
               <div style={{ minWidth: '0' }}>
                 <label
                   style={{
@@ -526,13 +489,7 @@ export default function CreateEventModal({ isOpen, onClose, onSubmit }: Props) {
             </div>
 
             {/* 파일 업로드 */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '20px',
-              }}
-            >
+            <div className="modal-grid-2" style={{ gap: '20px' }}>
               <div style={{ minWidth: '0' }}>
                 <label
                   style={{

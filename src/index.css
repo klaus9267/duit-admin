@@ -143,6 +143,35 @@ body {
   box-sizing: border-box;
 }
 
+/* 공통 모달 레이아웃 */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-panel {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px 32px;
+  width: 90vw;
+  max-width: 900px;
+  max-height: 85vh;
+  overflow: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+}
+
+.modal-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
 /* Utilities */
 .btn {
   height: 34px;
@@ -274,6 +303,27 @@ button:focus-visible {
 
   .app-header-right {
     gap: 6px;
+  }
+
+  .modal-backdrop {
+    align-items: flex-start;
+    justify-content: stretch;
+    overflow-y: auto;
+  }
+
+  .modal-panel {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: none;
+    border-radius: 0;
+    margin: 0;
+    padding: 20px 16px 24px;
+    box-shadow: none;
+  }
+
+  .modal-grid-2 {
+    grid-template-columns: 1fr;
   }
 
   .app-nav-desktop {
