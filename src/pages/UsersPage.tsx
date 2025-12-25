@@ -70,28 +70,28 @@ export default function UsersPage() {
 
   // 무한 스크롤 옵저버
   useEffect(() => {
-    if (!hasMore || loading) return;
+    if (!hasMore || loading || items.length === 0) return; // 초기 로드 완료 후에만 활성화
 
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting && hasMore && !loadingRef.current) {
+        if (entries[0].isIntersecting && hasMore && !loadingRef.current && items.length > 0) {
           loadMore(false);
         }
       },
       {
         // 스크롤 컨테이너의 맨 아래까지 내려왔을 때만 트리거
         root: scrollContainerRef.current,
-        threshold: 1.0,
-        rootMargin: '0px',
+        threshold: 0.1, // threshold를 낮춰서 더 정확하게 감지
+        rootMargin: '100px', // 스크롤 끝에서 100px 전에 미리 로드
       }
     );
 
-    if (observerRef.current) {
+    if (observerRef.current && scrollContainerRef.current) {
       observer.observe(observerRef.current);
     }
 
     return () => observer.disconnect();
-  }, [hasMore, loading, loadMore]);
+  }, [hasMore, loading, loadMore, items.length]);
 
   const formatBool = (value: boolean) => (value ? 'ON' : 'OFF');
 
