@@ -97,12 +97,12 @@ export default function UpdateEventModal({
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value, type, checked } = e.target as
-      | HTMLInputElement
-      | HTMLSelectElement;
+    const target = e.target as HTMLInputElement | HTMLSelectElement;
+    const { name, value, type } = target;
 
     // 체크박스는 boolean으로 처리
     if (type === "checkbox") {
+      const checked = (target as HTMLInputElement).checked;
       setFormData((prev) => ({
         ...prev,
         [name]: checked,
