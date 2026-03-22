@@ -21,7 +21,12 @@ function getImageUrl(thumbnail: string | null): string | null {
   return `${API_BASE}${normalizedPath}`;
 }
 
-export default function HostsPage() {
+interface HostsPageProps {
+  isCreateOpen?: boolean;
+  onCloseCreate?: () => void;
+}
+
+export default function HostsPage({ isCreateOpen: externalIsCreateOpen, onCloseCreate }: HostsPageProps = {}) {
   const [items, setItems] = useState<HostResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +36,16 @@ export default function HostsPage() {
   const [totalElements, setTotalElements] = useState<number>(0);
   const observerRef = useRef<HTMLDivElement>(null);
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
+
+  // 외부에서 모달 상태를 제어할 수 있도록
+  const actualIsCreateOpen = externalIsCreateOpen !== undefined ? externalIsCreateOpen : isCreateOpen;
+  const handleCloseCreate = () => {
+    if (externalIsCreateOpen !== undefined && onCloseCreate) {
+      onCloseCreate();
+    } else {
+      setIsCreateOpen(false);
+    }
+  };
 
   // 무한 스크롤을 위한 데이터 로딩
   const loadMore = useCallback(
@@ -147,7 +162,7 @@ export default function HostsPage() {
     >
       {error ? <div style={{ padding: 12, color: '#b91c1c' }}>오류: {error}</div> : null}
 
-      {/* 전체 개수 및 액션 */}
+      {/* 전체 개수 */}
       <div
         style={{
           padding: '8px 12px',
@@ -155,17 +170,9 @@ export default function HostsPage() {
           borderBottom: '1px solid var(--border)',
           fontSize: '14px',
           color: '#666',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
         }}
       >
         <span>총 {totalElements}개 주최기관</span>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn primary" onClick={() => setIsCreateOpen(true)}>
-            주최기관 생성
-          </button>
-        </div>
       </div>
 
       <div style={{ overflow: 'auto', flex: 1, position: 'relative' }}>
@@ -299,15 +306,16 @@ export default function HostsPage() {
         </div>
       )}
 
-      {isCreateOpen && (
+      {actualIsCreateOpen && (
         <CreateHostModal
-          isOpen={isCreateOpen}
-          onClose={() => setIsCreateOpen(false)}
+          isOpen={actualIsCreateOpen}
+          onClose={handleCloseCreate}
           onCreated={() => {
             setItems([]);
             setPage(0);
             setHasMore(true);
             loadMore(0, true);
+            handleCloseCreate();
           }}
         />
       )}

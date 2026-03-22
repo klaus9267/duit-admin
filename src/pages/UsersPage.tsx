@@ -1,14 +1,19 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { PaginationField, SortDirection, UserResponse } from '../api/types';
-import { getUsers } from '../api/usersClient';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { PaginationField, SortDirection, UserResponse } from "../api/types";
+import { getUsers } from "../api/usersClient";
+import { getStoredToken } from "../api/authClient";
 
 export default function UsersPage() {
   const [items, setItems] = useState<UserResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [size, setSize] = useState<number>(20);
-  const [sortField, setSortField] = useState<PaginationField>(PaginationField.ID);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.DESC);
+  const [sortField, setSortField] = useState<PaginationField>(
+    PaginationField.ID,
+  );
+  const [sortDirection, setSortDirection] = useState<SortDirection>(
+    SortDirection.DESC,
+  );
   const [totalElements, setTotalElements] = useState<number>(0);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [nextPage, setNextPage] = useState<number | null>(1); // 백엔드 예시(pageNumber 1 기준)
@@ -23,35 +28,41 @@ export default function UsersPage() {
       // reset 로드가 아니고 더 로드할 페이지가 없다면 중단
       if (!reset && (!hasMore || nextPage == null)) return;
 
-      const pageToLoad = reset ? 1 : nextPage ?? 1;
+      const pageToLoad = reset ? 1 : (nextPage ?? 1);
 
       loadingRef.current = true;
       setLoading(true);
       setError(null);
 
       try {
-        const data = await getUsers({
-          page: pageToLoad,
-          size,
-          sortDirection,
-          field: sortField,
-        });
+        const token = getStoredToken() ?? undefined;
+        const data = await getUsers(
+          {
+            page: pageToLoad,
+            size,
+            sortDirection,
+            field: sortField,
+          },
+          token,
+        );
 
         setTotalElements(data.pageInfo.totalElements);
-        setItems(prev => (reset ? data.content : [...prev, ...data.content]));
+        setItems((prev) => (reset ? data.content : [...prev, ...data.content]));
 
         const { pageNumber, totalPages } = data.pageInfo;
         const more = pageNumber < totalPages;
         setHasMore(more);
         setNextPage(more ? pageNumber + 1 : null);
       } catch (e: any) {
-        setError(e?.message ?? '사용자 목록을 불러오는 중 오류가 발생했습니다.');
+        setError(
+          e?.message ?? "사용자 목록을 불러오는 중 오류가 발생했습니다.",
+        );
       } finally {
         loadingRef.current = false;
         setLoading(false);
       }
     },
-    [size, sortDirection, sortField, hasMore, nextPage]
+    [size, sortDirection, sortField, hasMore, nextPage],
   );
 
   // 정렬 / 페이지 크기 변경 시 목록 초기화
@@ -63,75 +74,100 @@ export default function UsersPage() {
 
   // 초기 및 리셋 이후 첫 페이지 로드
   useEffect(() => {
-    if (nextPage === 1 && items.length === 0 && hasMore && !loadingRef.current) {
+    if (
+      nextPage === 1 &&
+      items.length === 0 &&
+      hasMore &&
+      !loadingRef.current
+    ) {
       loadMore(true);
     }
   }, [nextPage, items.length, hasMore, loadMore]);
 
   // 무한 스크롤 옵저버
   useEffect(() => {
-    if (!hasMore || loading) return;
+    if (!hasMore || loading || items.length === 0) return; // 초기 로드 완료 후에만 활성화
 
     const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore && !loadingRef.current) {
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !loadingRef.current &&
+          items.length > 0
+        ) {
           loadMore(false);
         }
       },
       {
         // 스크롤 컨테이너의 맨 아래까지 내려왔을 때만 트리거
         root: scrollContainerRef.current,
-        threshold: 1.0,
-        rootMargin: '0px',
-      }
+        threshold: 0.1, // threshold를 낮춰서 더 정확하게 감지
+        rootMargin: "100px", // 스크롤 끝에서 100px 전에 미리 로드
+      },
     );
 
-    if (observerRef.current) {
+    if (observerRef.current && scrollContainerRef.current) {
       observer.observe(observerRef.current);
     }
 
     return () => observer.disconnect();
-  }, [hasMore, loading, loadMore]);
+  }, [hasMore, loading, loadMore, items.length]);
 
-  const formatBool = (value: boolean) => (value ? 'ON' : 'OFF');
+  const formatBool = (value: boolean) => (value ? "ON" : "OFF");
 
   return (
     <div
       style={{
-        background: 'var(--panel)',
-        border: '1px solid var(--border)',
+        background: "var(--panel)",
+        border: "1px solid var(--border)",
         borderRadius: 10,
-        overflow: 'auto',
-        maxHeight: 'calc(100vh - 120px)',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
+        overflow: "auto",
+        maxHeight: "calc(100vh - 120px)",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
       }}
     >
       <div
         style={{
-          padding: '8px 12px',
-          borderBottom: '1px solid var(--border)',
-          background: '#f8f9fa',
+          padding: "8px 12px",
+          borderBottom: "1px solid var(--border)",
+          background: "#f8f9fa",
           fontSize: 14,
-          color: '#555',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
+          color: "#555",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
           gap: 8,
-          flexWrap: 'wrap',
+          flexWrap: "wrap",
         }}
       >
         <span>
           총 {totalElements}명 / 로드된 {items.length}명
         </span>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <label style={{ fontSize: 13, color: '#555', display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          <label
+            style={{
+              fontSize: 13,
+              color: "#555",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
             정렬
             <select
               className="select"
               value={sortField}
-              onChange={e => {
+              onChange={(e) => {
                 setSortField(e.target.value as PaginationField);
               }}
             >
@@ -140,12 +176,20 @@ export default function UsersPage() {
               <option value={PaginationField.CREATED_AT}>가입일</option>
             </select>
           </label>
-          <label style={{ fontSize: 13, color: '#555', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <label
+            style={{
+              fontSize: 13,
+              color: "#555",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
             방향
             <select
               className="select"
               value={sortDirection}
-              onChange={e => {
+              onChange={(e) => {
                 setSortDirection(e.target.value as SortDirection);
               }}
             >
@@ -153,12 +197,20 @@ export default function UsersPage() {
               <option value={SortDirection.ASC}>오름차순</option>
             </select>
           </label>
-          <label style={{ fontSize: 13, color: '#555', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <label
+            style={{
+              fontSize: 13,
+              color: "#555",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
             페이지 크기
             <select
               className="select"
               value={size}
-              onChange={e => {
+              onChange={(e) => {
                 setSize(Number(e.target.value));
               }}
             >
@@ -171,13 +223,19 @@ export default function UsersPage() {
       </div>
 
       {error && (
-        <div style={{ padding: 12, color: '#b91c1c', borderBottom: '1px solid var(--border)', fontSize: 13 }}>{error}</div>
+        <div
+          style={{
+            padding: 12,
+            color: "#b91c1c",
+            borderBottom: "1px solid var(--border)",
+            fontSize: 13,
+          }}
+        >
+          {error}
+        </div>
       )}
 
-      <div
-        ref={scrollContainerRef}
-        style={{ overflow: 'auto', flex: 1 }}
-      >
+      <div ref={scrollContainerRef} style={{ overflow: "auto", flex: 1 }}>
         <table className="grid-table">
           <thead>
             <tr>
@@ -198,7 +256,7 @@ export default function UsersPage() {
                 <td colSpan={9}>사용자가 없습니다.</td>
               </tr>
             ) : (
-              items.map(user => (
+              items.map((user) => (
                 <tr key={user.id}>
                   <td>{user.id}</td>
                   <td style={{ maxWidth: 220 }}>
@@ -233,23 +291,23 @@ export default function UsersPage() {
       {loading && (
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             inset: 0,
-            background: 'rgba(255,255,255,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            pointerEvents: 'none',
+            background: "rgba(255,255,255,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            pointerEvents: "none",
           }}
         >
           <div
             style={{
               width: 24,
               height: 24,
-              border: '2px solid #f3f3f3',
-              borderTop: '2px solid var(--primary)',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
+              border: "2px solid #f3f3f3",
+              borderTop: "2px solid var(--primary)",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
             }}
           />
         </div>
@@ -257,4 +315,3 @@ export default function UsersPage() {
     </div>
   );
 }
-

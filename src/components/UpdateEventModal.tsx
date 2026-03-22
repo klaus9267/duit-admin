@@ -90,10 +90,12 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
   }, [eventData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target as HTMLInputElement | HTMLSelectElement;
+    const target = e.target as HTMLInputElement | HTMLSelectElement;
+    const { name, value, type } = target;
 
     // 체크박스는 boolean으로 처리
     if (type === 'checkbox') {
+      const checked = (target as HTMLInputElement).checked;
       setFormData(prev => ({
         ...prev,
         [name]: checked,
@@ -549,7 +551,15 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
                 }}
               />
               {eventData.thumbnail && <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>현재 썸네일: {eventData.thumbnail.split('/').pop()}</div>}
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: 13 }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  marginTop: 8,
+                  fontSize: 13,
+                }}
+              >
                 <input type="checkbox" name="deleteEventThumbnail" checked={formData.deleteEventThumbnail} onChange={handleInputChange} />
                 행사 썸네일 삭제
               </label>
@@ -584,7 +594,15 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
                   }}
                 />
                 {eventData.host.thumbnail && <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>현재 로고: {eventData.host.thumbnail.split('/').pop()}</div>}
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: 13 }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    marginTop: 8,
+                    fontSize: 13,
+                  }}
+                >
                   <input type="checkbox" name="deleteHostThumbnail" checked={formData.deleteHostThumbnail} onChange={handleInputChange} />
                   주최 기관 로고 삭제
                 </label>
