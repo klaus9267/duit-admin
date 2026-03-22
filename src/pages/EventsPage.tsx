@@ -95,17 +95,7 @@ type Props = {
   approveMode?: boolean; // 제보 탭에서 승인 버튼 사용
 };
 
-export default function EventsPage({
-  sortField,
-  sortDirection: _sortDirection,
-  filterApproved,
-  statusFilter,
-  statusGroupFilter,
-  eventTypeFilter,
-  hostIdFilter,
-  onEditEvent,
-  approveMode,
-}: Props) {
+export default function EventsPage({ sortField, sortDirection: _sortDirection, filterApproved, statusFilter, statusGroupFilter, eventTypeFilter, hostIdFilter, onEditEvent, approveMode }: Props) {
   const [items, setItems] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -454,6 +444,8 @@ export default function EventsPage({
                           return '봉사';
                         case EventType.TRAINING:
                           return '연수';
+                        case EventType.SUPPORTERS:
+                          return '서포터즈';
                         case EventType.ETC:
                         default:
                           return '기타';

@@ -10,6 +10,7 @@ export enum EventType {
   EDUCATION = "EDUCATION",
   VOLUNTEER = "VOLUNTEER",
   TRAINING = "TRAINING",
+  SUPPORTERS = "SUPPORTERS",
   ETC = "ETC",
 }
 
@@ -23,6 +24,7 @@ export const EVENT_TYPE_LABEL: Record<EventType, string> = {
   [EventType.EDUCATION]: "교육",
   [EventType.VOLUNTEER]: "봉사",
   [EventType.TRAINING]: "연수",
+  [EventType.SUPPORTERS]: "서포터즈",
   [EventType.ETC]: "기타",
 };
 
@@ -78,6 +80,7 @@ export interface EventResponse {
   host: HostResponse;
   viewCount: number;
   isBookmarked: boolean;
+  supporters?: number;
 }
 
 export interface PageInfo {

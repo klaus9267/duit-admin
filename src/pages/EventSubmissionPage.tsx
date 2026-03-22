@@ -33,6 +33,7 @@ const EVENT_TYPE_OPTIONS = [
   { value: EventType.EDUCATION, label: "교육" },
   { value: EventType.VOLUNTEER, label: "봉사" },
   { value: EventType.TRAINING, label: "연수" },
+  { value: EventType.SUPPORTERS, label: "서포터즈" },
   { value: EventType.ETC, label: "기타" },
 ];
 

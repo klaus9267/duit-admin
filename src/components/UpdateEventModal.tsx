@@ -15,8 +15,8 @@ interface EventFormData {
   hostName: string; // 새 주최기관 생성 시
   eventThumbnail: File | null;
   hostThumbnail: File | null;
-   deleteEventThumbnail: boolean;
-   deleteHostThumbnail: boolean;
+  deleteEventThumbnail: boolean;
+  deleteHostThumbnail: boolean;
 }
 
 interface UpdateEventModalProps {
@@ -102,16 +102,7 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
     }
     setFormData(prev => ({
       ...prev,
-      [name]:
-        name === 'hostId'
-          ? Number(value)
-          : name === 'hostMode'
-          ? (value as 'select' | 'create')
-          : name === 'eventType'
-          ? (value as EventType)
-          : value === ''
-          ? null
-          : value,
+      [name]: name === 'hostId' ? Number(value) : name === 'hostMode' ? (value as 'select' | 'create') : name === 'eventType' ? (value as EventType) : value === '' ? null : value,
     }));
   };
 
@@ -456,6 +447,7 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
                 <option value={EventType.EDUCATION}>교육</option>
                 <option value={EventType.VOLUNTEER}>봉사</option>
                 <option value={EventType.TRAINING}>연수</option>
+                <option value={EventType.SUPPORTERS}>서포터즈</option>
                 <option value={EventType.ETC}>기타</option>
               </select>
             </div>
@@ -558,12 +550,7 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
               />
               {eventData.thumbnail && <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>현재 썸네일: {eventData.thumbnail.split('/').pop()}</div>}
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: 13 }}>
-                <input
-                  type="checkbox"
-                  name="deleteEventThumbnail"
-                  checked={formData.deleteEventThumbnail}
-                  onChange={handleInputChange}
-                />
+                <input type="checkbox" name="deleteEventThumbnail" checked={formData.deleteEventThumbnail} onChange={handleInputChange} />
                 행사 썸네일 삭제
               </label>
             </div>
@@ -598,12 +585,7 @@ export default function UpdateEventModal({ isOpen, onClose, onSubmit, eventData 
                 />
                 {eventData.host.thumbnail && <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>현재 로고: {eventData.host.thumbnail.split('/').pop()}</div>}
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: 13 }}>
-                  <input
-                    type="checkbox"
-                    name="deleteHostThumbnail"
-                    checked={formData.deleteHostThumbnail}
-                    onChange={handleInputChange}
-                  />
+                  <input type="checkbox" name="deleteHostThumbnail" checked={formData.deleteHostThumbnail} onChange={handleInputChange} />
                   주최 기관 로고 삭제
                 </label>
               </div>
