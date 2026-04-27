@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import CreateHostModal from '../components/CreateHostModal';
-import { getHosts, deleteHost } from '../api/hostsClient';
+import { getHosts, deleteHostsBatch } from '../api/hostsClient';
 import { HostResponse, PaginationField, SortDirection } from '../api/types';
 
 // 이미지 URL을 절대 경로로 변환하는 함수
@@ -122,7 +122,7 @@ export default function HostsPage({ isCreateOpen: externalIsCreateOpen, onCloseC
     });
   };
 
-  // 선택된 주최기관들 삭제
+  // 선택된 주최기관들 삭제 (부분 성공 지원)
   const onDeleteSelected = async () => {
     if (selected.size === 0) return;
 
@@ -131,16 +131,24 @@ export default function HostsPage({ isCreateOpen: externalIsCreateOpen, onCloseC
     }
 
     try {
-      // 선택된 각 주최기관을 서버에서 삭제
-      const deletePromises = Array.from(selected).map(hostId => deleteHost(hostId));
+      const result = await deleteHostsBatch(Array.from(selected));
+      const blockedIds = new Set(result.blockedHosts.map(h => h.id));
 
-      await Promise.all(deletePromises);
+      // 차단된 호스트는 목록에 남기고, 나머지 선택된 항목만 제거
+      setItems(prev => prev.filter(h => !selected.has(h.id) || blockedIds.has(h.id)));
+      // 사용자가 즉시 인지할 수 있도록 차단된 호스트만 selected 유지
+      setSelected(blockedIds);
+      setTotalElements(prev => Math.max(0, prev - result.deletedCount));
 
-      // 성공 시 로컬 상태에서도 제거
-      setItems(prev => prev.filter(h => !selected.has(h.id)));
-      setSelected(new Set());
-
-      alert('선택된 주최기관이 성공적으로 삭제되었습니다.');
+      if (result.blockedHosts.length > 0) {
+        const names = result.blockedHosts.map(h => h.name).join(', ');
+        const head = result.deletedCount > 0
+          ? `${result.deletedCount}개 삭제 완료.\n다음은 이미 발행한 행사가 있어 삭제할 수 없습니다:\n`
+          : `이미 발행한 행사가 있는 주최기관은 삭제할 수 없습니다:\n`;
+        alert(head + names);
+      } else {
+        alert('선택된 주최기관이 성공적으로 삭제되었습니다.');
+      }
     } catch (error: any) {
       alert(`삭제 실패: ${error.message}`);
     }

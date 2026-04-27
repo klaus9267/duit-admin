@@ -114,7 +114,7 @@ export async function getAllHostsPublic(): Promise<HostResponse[]> {
   return response.content;
 }
 
-// 주최기관 삭제
+// 주최기관 삭제 (단건) - 연결된 행사가 있으면 409 반환
 export async function deleteHost(
   hostId: number,
   token?: string
@@ -140,8 +140,58 @@ export async function deleteHost(
       throw new Error("인증이 만료되었습니다. 다시 로그인해주세요.");
     }
     const text = await res.text();
-    throw new Error(`Failed to delete host: ${res.status} ${text}`);
+    try {
+      const errorJson = JSON.parse(text);
+      throw new Error(errorJson.message || `삭제 실패 (${res.status})`);
+    } catch {
+      throw new Error(`삭제 실패 (${res.status}): ${text}`);
+    }
   }
+}
+
+export interface BatchDeleteHostResult {
+  deletedCount: number;
+  blockedHosts: { id: number; name: string }[];
+}
+
+// 주최기관 일괄 삭제 - 연결된 행사가 있는 주최기관은 응답의 blockedHosts에 포함됨
+export async function deleteHostsBatch(
+  hostIds: number[],
+  token?: string
+): Promise<BatchDeleteHostResult> {
+  if (hostIds.length === 0) {
+    return { deletedCount: 0, blockedHosts: [] };
+  }
+
+  const url = `${API_BASE}/api/v1/hosts`;
+  const authToken = token || checkAuthAndRedirect();
+
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    },
+    credentials: "include",
+    body: JSON.stringify({ hostIds }),
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem("admin_token");
+      window.location.href = "/";
+      throw new Error("인증이 만료되었습니다. 다시 로그인해주세요.");
+    }
+    const text = await res.text();
+    try {
+      const errorJson = JSON.parse(text);
+      throw new Error(errorJson.message || `삭제 실패 (${res.status})`);
+    } catch {
+      throw new Error(`삭제 실패 (${res.status}): ${text}`);
+    }
+  }
+
+  return (await res.json()) as BatchDeleteHostResult;
 }
 
 // 주최기관 생성 (multipart/form-data)
